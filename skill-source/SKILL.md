@@ -433,8 +433,8 @@ When user runs `/coach context`:
 
 1. **Fetch recent data for inference:**
    ```bash
-   node ~/.claude/skills/coach/scripts/intervals-api.js wellness --days 60
-   node ~/.claude/skills/coach/scripts/intervals-api.js activities --limit 30
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 60
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll activities --limit 30
    ```
 
 2. **Infer training context from data:**
@@ -550,13 +550,13 @@ When user runs `/coach check-in`:
 1. **Fetch comprehensive data:**
    ```bash
    # Get 90-day wellness data for CTL trend analysis
-   node ~/.claude/skills/coach/scripts/intervals-api.js wellness --days 90
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 90
 
    # Get recent activities for pattern analysis
-   node ~/.claude/skills/coach/scripts/intervals-api.js activities --limit 20
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll activities --limit 20
 
    # Get current profile snapshot
-   node ~/.claude/skills/coach/scripts/intervals-api.js profile
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll profile
    ```
 
 2. **Load context:**
@@ -708,7 +708,7 @@ When user runs `/coach profile`:
 
 2. **Fetch athlete data:**
    ```bash
-   node ~/.claude/skills/coach/scripts/intervals-api.js profile
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll profile
    ```
 
 3. **Display profile information:**
@@ -740,21 +740,21 @@ When user runs `/coach analyze [activity-id]`:
    - If ID provided, use it
    - If not, fetch last activity:
      ```bash
-     node ~/.claude/skills/coach/scripts/intervals-api.js activities --limit 1
+     dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll activities --limit 1
      ```
 
-3. **Fetch activity data:**
+3. **Fetch activity data and run analysis:**
    ```bash
-   node ~/.claude/skills/coach/scripts/intervals-api.js activity <id>
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll analyze <id>
    ```
 
-4. **Run analysis calculations:**
-   ```bash
-   echo '{"activity": <activity-data>, "profile": <profile-data>}' | \
-     node ~/.claude/skills/coach/scripts/analyze-activity.js
-   ```
+   This single command:
+   - Fetches the activity with streams
+   - Fetches the profile (for FTP/zones)
+   - Runs all analysis calculations
+   - Returns comprehensive analysis results
 
-5. **Interpret results:**
+4. **Interpret results:**
    - Reference examples/activity-analysis.md for formatting
    - Provide comprehensive analysis covering:
      - Overview metrics (TSS, IF, NP)
@@ -766,14 +766,14 @@ When user runs `/coach analyze [activity-id]`:
      - Power/HR coupling assessment
      - **Power curve:** Check 20-min power for FTP estimation if relevant
 
-6. **Coaching insights:**
+5. **Coaching insights:**
    - Identify strengths demonstrated
    - Note areas for development
    - **FTP test recommendation:** If 20-min power suggests FTP is off by >5%
    - Provide 2-3 specific, actionable recommendations (keep concise!)
    - Ask relevant follow-up questions
 
-7. **Maintain context:**
+6. **Maintain context:**
    - Keep activity data and analysis for follow-up questions
    - User may ask "What does this mean for my FTP?" or "Should I test?"
    - Answer without re-fetching data
@@ -789,7 +789,7 @@ When user runs `/coach trends [days]`:
 
 2. **Fetch wellness data:**
    ```bash
-   node ~/.claude/skills/coach/scripts/intervals-api.js wellness --days 30
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 30
    ```
 
 3. **Analyze trends:**
