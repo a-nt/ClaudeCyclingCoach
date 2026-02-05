@@ -44,6 +44,24 @@ Users can invoke this skill with:
 
 After any command, maintain context for follow-up questions without re-fetching data.
 
+**IMPORTANT: If invoked with no arguments (just `/coach`), show a helpful menu:**
+
+```
+Hey! I'm your cycling coach. What would you like to do?
+
+  /coach setup          - First-time setup (connect intervals.icu)
+  /coach profile        - View your FTP, zones, and current fitness
+  /coach trends [days]  - Analyze your training load (default: 30 days)
+  /coach analyze [id]   - Analyze a specific ride
+
+Or just ask me anything about training, like:
+  - "Should I train hard today?"
+  - "What should I focus on this week?"
+  - "How's my fitness trending?"
+
+What can I help with?
+```
+
 ## Configuration
 
 ### Priority Order
