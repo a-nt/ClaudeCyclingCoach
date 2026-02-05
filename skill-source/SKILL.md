@@ -413,16 +413,20 @@ When user runs `/coach analyze [activity-id]`:
 5. **Interpret results:**
    - Reference examples/activity-analysis.md for formatting
    - Provide comprehensive analysis covering:
-     - Overview metrics
+     - Overview metrics (TSS, IF, NP)
+     - **VI (Variability Index):** Pacing consistency assessment
+     - **EF (Efficiency Factor):** Aerobic efficiency (compare to previous similar workouts if available)
      - Zone distribution interpretation
      - Aerobic decoupling analysis
      - Sustained intervals detected
      - Power/HR coupling assessment
+     - **Power curve:** Check 20-min power for FTP estimation if relevant
 
 6. **Coaching insights:**
    - Identify strengths demonstrated
    - Note areas for development
-   - Provide 3-5 specific, actionable recommendations
+   - **FTP test recommendation:** If 20-min power suggests FTP is off by >5%
+   - Provide 2-3 specific, actionable recommendations (keep concise!)
    - Ask relevant follow-up questions
 
 7. **Maintain context:**
@@ -446,6 +450,7 @@ When user runs `/coach trends [days]`:
 3. **Analyze trends:**
    - Reference examples/trend-report.md for formatting
    - Calculate key metrics:
+     - **CTL ramp rate:** (Current CTL - CTL 4 weeks ago) / 4 weeks
      - CTL change over period
      - ATL patterns (fatigue management)
      - TSB trajectory (form direction)
@@ -453,10 +458,13 @@ When user runs `/coach trends [days]`:
      - Wellness correlations if available
 
 4. **Interpret fitness direction:**
-   - Is CTL building appropriately?
+   - **CRITICAL:** Check CTL ramp rate first
+     - >10 TSS/week = warn about injury/overtraining risk
+     - 5-8 TSS/week = ideal building rate
+     - <5 TSS/week = maintenance or slow build
    - Are recovery periods included?
    - Is load sustainable?
-   - Any red flags (rapid ramp, chronic fatigue)?
+   - Any red flags (rapid ramp, chronic fatigue, high TSB negative)?
 
 5. **Provide recommendations:**
    - Immediate (next 7 days)
@@ -503,7 +511,20 @@ Compares cardiac drift between first and second half at same power:
 - 42-day rolling average of TSS (Training Stress Score)
 - Represents fitness level
 - Typical ranges: 40-60 (recreational), 80-100 (competitive), 120+ (elite)
-- Safe ramp rate: 5-8 points/week
+
+**CTL Ramp Rate (Critical for Injury Prevention):**
+- **Safe rate:** 5-8 TSS/day per week (35-56 TSS/week total)
+- **Calculate:** Compare this week's CTL to 4 weeks ago, divide by 4
+- **Warning signs:**
+  - Ramping >10 TSS/week = high injury/illness risk
+  - Ramping >15 TSS/week = very high risk, likely unsustainable
+- **Example:** CTL 60 → 80 in 4 weeks = +5/week (safe)
+- **Example:** CTL 60 → 100 in 4 weeks = +10/week (too aggressive)
+
+**When reviewing trends, ALWAYS check ramp rate:**
+- If ramping too fast: suggest reducing volume even if athlete feels good
+- Include recovery weeks: 3 weeks build, 1 week reduce (step-loading)
+- After recovery week, CTL will drop slightly - this is healthy
 
 **ATL (Acute Training Load):**
 - 7-day rolling average of TSS
@@ -569,6 +590,23 @@ Only suggest easy days/recovery if:
 - Aerobic fitness (increases efficiency)
 - Intensity (lower at higher efforts)
 
+### Efficiency Factor (EF)
+
+**Formula:** Normalized Power / Average HR
+
+**Purpose:** Track aerobic efficiency trends over time
+- Higher EF = more power at same heart rate (better fitness)
+- Monitor same workout type over weeks/months
+- Improving EF = aerobic development working
+- Declining EF = fatigue or overtraining
+
+**Typical values:**
+- Recreational: 1.5-2.0
+- Competitive: 2.0-2.5
+- Well-trained: 2.5-3.0+
+
+**Important:** Compare similar workouts (same intensity/duration). Don't compare easy ride EF to interval session EF.
+
 ### Intensity Factor (IF)
 
 Normalized Power / FTP:
@@ -577,6 +615,24 @@ Normalized Power / FTP:
 - **0.85-0.95:** Tempo
 - **0.95-1.05:** Threshold
 - **>1.05:** VO2 max and above
+
+### Variability Index (VI)
+
+**Formula:** Normalized Power / Average Power
+
+**Purpose:** Measures pacing consistency
+- **1.00-1.02:** Perfect steady-state pacing (time trials)
+- **1.03-1.05:** Good pacing (steady endurance rides)
+- **1.06-1.10:** Moderate variability (tempo with some surges)
+- **>1.10:** High variability (intervals, races, group rides)
+
+**Interpretation:**
+- Lower VI = more consistent effort
+- For time trials/threshold tests: aim for <1.05
+- For interval workouts: VI >1.10 is expected and good
+- For endurance rides: VI >1.10 suggests too much surging (inefficient)
+
+**Coaching use:** High VI on "easy" rides = athlete not pacing well (common issue).
 
 ### Training Stress Score (TSS)
 
@@ -587,6 +643,43 @@ Quantifies training load:
 - **>450:** Very hard/epic day
 
 Weekly targets vary by goals (typically 300-700 for recreational, 500-1000+ for competitive).
+
+### Power Curve Analysis
+
+**What it is:** Best power outputs for specific durations (5s, 1min, 5min, 20min, 60min)
+
+**Available from intervals.icu:** `powerCurve` field contains max watts at each duration
+
+**Key uses:**
+
+1. **FTP Estimation:**
+   - 20-min power × 0.95 = estimated FTP
+   - 60-min power = true FTP (if available)
+   - Compare to current FTP setting
+
+2. **Rider Profiling:**
+   - **Sprinter:** 5s power very high relative to 20min power
+   - **Time Trialist:** 20min power close to 60min power (good endurance)
+   - **All-rounder:** Balanced across durations
+   - **Climber:** High W/kg at 20min+
+
+3. **FTP Test Recommendations:**
+   - If 20-min power (×0.95) is >5% different from current FTP → suggest test
+   - If no formal test in 6-8 weeks → suggest test
+   - After significant training block → suggest test
+
+4. **Tracking Improvement:**
+   - Compare power curve from same workout type over time
+   - "Your 5-min power improved from X to Y watts in 4 weeks"
+
+**Example interpretation:**
+- 5s: 1200W (16 W/kg)
+- 1min: 450W (5.7 W/kg)
+- 5min: 350W (4.4 W/kg)
+- 20min: 280W (3.5 W/kg)
+- Current FTP: 250W
+
+→ "Your 20-min power suggests FTP around 266W (280×0.95). Consider testing soon - you might be stronger than your current 250W FTP."
 
 ## Output Formatting
 
