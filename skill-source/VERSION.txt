@@ -1,0 +1,61 @@
+Cycling Coach Skill for Claude Code
+Version: 1.0.0
+Release Date: 2024-02-05
+
+## What's Included
+
+Core Files:
+- SKILL.md (509 lines) - Main skill definition with complete workflows
+- README.md - Installation and usage instructions
+- LICENSE.txt - MIT License
+
+Scripts:
+- scripts/intervals-api.js - intervals.icu API client
+- scripts/analyze-activity.js - Activity analysis calculations
+
+Examples:
+- examples/activity-analysis.md - Activity analysis template
+- examples/trend-report.md - Fitness trends template
+
+Configuration:
+- .config.json.example - Configuration template
+- TESTING.md - Comprehensive testing guide
+- VERSION.txt - This file
+
+## Features
+
+✓ Activity analysis (power/HR coupling, zones, decoupling)
+✓ Fitness trends (CTL/ATL/TSB progression)
+✓ Athlete profile management
+✓ Conversational coaching follow-ups
+✓ Secure credential management
+✓ Zero external dependencies (Node.js built-ins only)
+✓ Distributable to any intervals.icu user
+
+## Commands
+
+/coach setup          - Configure credentials
+/coach profile        - View athlete profile
+/coach analyze [id]   - Analyze activity
+/coach trends [days]  - View fitness trends
+/coach                - General coaching
+
+## Requirements
+
+- Node.js (any recent version)
+- intervals.icu account with API key
+- Claude Code
+
+## Installation
+
+See README.md for detailed instructions.
+
+Quick start:
+1. Copy directory to ~/.claude/skills/cycling-coach/
+2. Run /coach setup in Claude Code
+3. Enter your intervals.icu credentials
+4. Start analyzing!
+
+## Support
+
+Check TESTING.md for troubleshooting and verification steps.

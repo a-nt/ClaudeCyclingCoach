@@ -1,0 +1,18 @@
+# Config files with credentials
+skill-source/.config.json
+.config.json
+*/.config.json
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
