@@ -70,7 +70,7 @@ What can I help with?
    - `INTERVALS_ICU_API_KEY`
    - `INTERVALS_ICU_ATHLETE_ID`
 
-2. **Config file** (~/.claude/skills/cycling-coach/.config.json):
+2. **Config file** (~/.claude/skills/coach/.config.json):
    ```json
    {
      "apiKey": "your-api-key",
@@ -103,7 +103,7 @@ When user runs `/coach setup`:
    - Validate format (athlete ID should start with 'i')
 
 3. **Store configuration:**
-   - Create ~/.claude/skills/cycling-coach/.config.json
+   - Create ~/.claude/skills/coach/.config.json
    - Write JSON with apiKey and athleteId
    - Set file permissions to 600 for security
    - Confirm successful setup
@@ -122,7 +122,7 @@ When user runs `/coach profile`:
 
 2. **Fetch athlete data:**
    ```bash
-   node ~/.claude/skills/cycling-coach/scripts/intervals-api.js profile
+   node ~/.claude/skills/coach/scripts/intervals-api.js profile
    ```
 
 3. **Display profile information:**
@@ -153,18 +153,18 @@ When user runs `/coach analyze [activity-id]`:
    - If ID provided, use it
    - If not, fetch last activity:
      ```bash
-     node ~/.claude/skills/cycling-coach/scripts/intervals-api.js activities --limit 1
+     node ~/.claude/skills/coach/scripts/intervals-api.js activities --limit 1
      ```
 
 3. **Fetch activity data:**
    ```bash
-   node ~/.claude/skills/cycling-coach/scripts/intervals-api.js activity <id>
+   node ~/.claude/skills/coach/scripts/intervals-api.js activity <id>
    ```
 
 4. **Run analysis calculations:**
    ```bash
    echo '{"activity": <activity-data>, "profile": <profile-data>}' | \
-     node ~/.claude/skills/cycling-coach/scripts/analyze-activity.js
+     node ~/.claude/skills/coach/scripts/analyze-activity.js
    ```
 
 5. **Interpret results:**
@@ -197,7 +197,7 @@ When user runs `/coach trends [days]`:
 
 2. **Fetch wellness data:**
    ```bash
-   node ~/.claude/skills/cycling-coach/scripts/intervals-api.js wellness --days 30
+   node ~/.claude/skills/coach/scripts/intervals-api.js wellness --days 30
    ```
 
 3. **Analyze trends:**
@@ -480,7 +480,7 @@ User asks → You answer briefly + ask back:
 
 This skill is designed for easy sharing:
 
-1. **User installs:** Copy directory to ~/.claude/skills/cycling-coach/
+1. **User installs:** Copy directory to ~/.claude/skills/coach/
 2. **User configures:** Run /coach setup or set env vars
 3. **User analyzes:** Commands work with their own intervals.icu account
 
@@ -496,7 +496,7 @@ No hardcoded credentials or athlete-specific data in skill files.
 
 ### intervals-api.js
 
-Located: ~/.claude/skills/cycling-coach/scripts/intervals-api.js
+Located: ~/.claude/skills/coach/scripts/intervals-api.js
 
 Commands:
 - `profile` - Fetch athlete data
@@ -508,7 +508,7 @@ Output: JSON with success/error status
 
 ### analyze-activity.js
 
-Located: ~/.claude/skills/cycling-coach/scripts/analyze-activity.js
+Located: ~/.claude/skills/coach/scripts/analyze-activity.js
 
 Input: JSON via stdin with activity and profile data
 Output: JSON with calculated metrics (zones, decoupling, intervals, efficiency)
