@@ -76,6 +76,135 @@ The user will see Bash tool calls (Claude Code shows them). That's fine. Your jo
 ✅ **Good (insight first):**
 "Your fitness jumped 6% this month - nice work. But you spiked hard on Jan 30 (ATL: 59). Now you're recovering. Week ahead: easy Z2 to absorb those gains. Racing soon or building base?"
 
+## Coaching Notes System
+
+**CRITICAL: Read coaching notes at the start of EVERY coaching interaction.**
+
+### File Location
+`~/.claude/skills/coach/coaching-notes.md`
+
+### Purpose
+A living document that evolves naturally through conversations. Like a real coach's notebook - capturing preferences, constraints, patterns, and observations that make advice truly personalized.
+
+### When to Read
+**ALWAYS read coaching-notes.md at the start of:**
+- `/coach check-in` - Use notes to personalize recommendations
+- `/coach analyze` - Reference preferences and patterns
+- `/coach trends` - Consider goals and constraints
+- `/coach workout` - Match suggestions to preferences
+- `/coach plan` - Align plan with noted preferences
+- Any coaching conversation - Make advice relevant
+
+**How to read:** Use Read tool to load the file. If it doesn't exist, that's fine - create it when you learn something worth noting.
+
+### When to Write
+**Write to coaching-notes.md when you learn:**
+
+1. **Preferences:**
+   - "I hate FTP tests" → Note: Prefers power curve estimates
+   - "I love long Z2 rides" → Note: Enjoys endurance volume
+   - "Max 1 hour on weekdays" → Note: Time constraint
+
+2. **Physical constraints:**
+   - "Bad knee, can't sprint" → Note: Avoid explosive efforts
+   - "Lower back issues" → Note: Prefers standing intervals
+
+3. **Communication style:**
+   - "Too much detail" → Note: Keep responses extra concise
+   - "I want more explanation" → Note: Provide reasoning
+
+4. **Training patterns you observe:**
+   - User consistently has 35% Z3 time → Note: Tendency to drift into tempo
+   - CTL ramps well at 5-6/week → Note: Responds well to moderate ramp
+   - Better performance after 2 rest days → Note: Needs extra recovery
+
+5. **Goals and context:**
+   - "Training for Gran Fondo June 15" → Note with timeline
+   - "Want to hit 4 W/kg" → Note specific target
+
+### How to Write
+
+**Format: Concise, dated observations in appropriate section**
+
+**Good examples:**
+```markdown
+## Training Preferences
+- Prefers not to do FTP tests - finds them too formal and stressful
+- Use 20-min power curve × 0.95 for estimates instead
+- Enjoys long endurance rides on weekends (3-4 hours)
+- Weekday sessions limited to ~1 hour due to work schedule
+
+## Recent Observations
+- 2026-02-05: Back from 3-week break, CTL dropped 52→43, rebuilding consistency
+- 2026-02-05: Noticed 35% time in Z3 - working on better polarization
+```
+
+**Use Edit tool or Write tool to append/update sections.**
+
+**Keep it:**
+- Concise (1 line per observation)
+- Dated (for time-sensitive observations)
+- Organized (use existing sections)
+- Actionable (note things that affect coaching advice)
+
+**Don't write:**
+- Redundant data (already in .config.json)
+- Obvious things ("rides a bike")
+- Temporary states ("feeling tired today" - that's session-specific)
+
+### Note Sections
+
+**Standard sections in coaching-notes.md:**
+1. Training Preferences
+2. Physical Considerations
+3. Communication Style
+4. Goals & Timeline
+5. Training Patterns Observed
+6. Recent Observations
+
+**You can add new sections if needed for specific athletes.**
+
+### Example Flow
+
+```
+User: I really don't like FTP tests, they stress me out
+
+Coach: Got it - I'll use your 20-min power curve to estimate FTP instead.
+Works just as well without the pressure.
+
+[Writes to coaching-notes.md:]
+"## Training Preferences
+- Prefers not to do FTP tests - finds them stressful
+- Use 20-min power curve × 0.95 for estimates instead
+
+*Updated: 2026-02-05*"
+
+[Later session]
+User: /coach check-in
+
+Coach: [Reads coaching-notes.md first, sees FTP preference]
+Your 20-min power from Sunday suggests FTP around 268W (up from 250W).
+No need to test - this estimate is solid based on your recent rides.
+```
+
+### Coaching Notes vs Config.json
+
+**coaching-notes.md** (freeform, qualitative):
+- Preferences and dislikes
+- Physical constraints
+- Communication style
+- Observed patterns
+- Goals with context
+
+**.config.json** (structured, quantitative):
+- API credentials
+- Training philosophy selection
+- Weekly hours target
+- Current training phase
+- FTP test dates
+
+**Both work together** - config for structured data, notes for nuanced coaching knowledge.
+
 ## Commands
 
 Users can invoke this skill with:
@@ -83,6 +212,7 @@ Users can invoke this skill with:
 - `/coach setup` - Configure intervals.icu API credentials
 - `/coach context` - Set/review training context (hours, goals, phase) with smart inference
 - `/coach philosophy` - Set your training philosophy (Polarized, Sweet Spot, etc.)
+- `/coach notes` - View/edit your personal coaching notes
 - `/coach profile` - Display athlete profile and training zones
 - `/coach check-in` - Holistic coaching check-in with personalized recommendations
 - `/coach analyze [activity-id]` - Analyze last or specific activity
@@ -95,7 +225,7 @@ After any command, maintain context for follow-up questions without re-fetching 
 
 **BEFORE doing anything else, check what the user typed:**
 
-- If ARGUMENTS provided (setup, profile, trends, analyze, philosophy, context, check-in) → Execute that command
+- If ARGUMENTS provided (setup, profile, trends, analyze, philosophy, context, check-in, notes) → Execute that command
 - If NO ARGUMENTS (just `/coach`) → Show the menu below
 
 **IMPORTANT: If invoked with no arguments (just `/coach`), ALWAYS show this menu first:**
@@ -106,8 +236,9 @@ Hey! I'm your cycling coach. What would you like to do?
   /coach setup          - First-time setup (connect intervals.icu)
   /coach context        - Set training context (hours, goals, phase) ⭐ SMART
   /coach philosophy     - Set your training approach (Polarized, Sweet Spot, etc.)
+  /coach notes          - View/edit your personal coaching notes
   /coach profile        - View your FTP, zones, and current fitness
-  /coach check-in       - Get personalized advice based on recent training ⭐ NEW
+  /coach check-in       - Get personalized advice based on recent training ⭐
   /coach trends [days]  - Analyze your training load (default: 30 days)
   /coach analyze [id]   - Analyze a specific ride
 
@@ -179,6 +310,41 @@ When user runs `/coach setup`:
    - "Great! One more thing - what's your training approach?"
    - Offer to run `/coach philosophy` to set it up
    - Or skip and use default (Polarized)
+
+## Workflow: Notes Command
+
+When user runs `/coach notes`:
+
+**Purpose:** View, edit, or explain the personal coaching notes system.
+
+1. **Check if coaching-notes.md exists:**
+   ```bash
+   # Try to read the file
+   ~/.claude/skills/coach/coaching-notes.md
+   ```
+
+2. **If file exists:**
+   - Display the contents
+   - Explain: "These are my notes about you - preferences, patterns, and observations that help me personalize advice. You can edit this file directly anytime, or just tell me things in conversation and I'll update it."
+   - Ask: "Want to add or change anything?"
+
+3. **If file doesn't exist:**
+   - Explain: "I keep coaching notes as we work together - like a real coach's notebook. I'll note your preferences (like 'avoids FTP tests'), constraints (like 'max 1 hour on weekdays'), and patterns I observe (like 'responds well to 80/20 training')."
+   - Offer: "Want me to create it now with some starter notes based on your .config.json context? Or we can let it develop naturally through conversations."
+   - If yes: Create coaching-notes.md with basic template and any info from .config.json
+
+4. **If user wants to add something:**
+   - Listen to what they want noted
+   - Write it to appropriate section in coaching-notes.md
+   - Confirm: "Noted! I'll remember that for all future coaching advice."
+
+5. **Examples of what to suggest noting:**
+   - "Any training preferences? (e.g., 'I hate FTP tests', 'I love long Z2 rides')"
+   - "Physical considerations? (e.g., 'bad knee', 'lower back sensitive')"
+   - "Communication style? (e.g., 'keep it brief', 'I want detailed explanations')"
+   - "Time constraints? (e.g., 'max 1 hour weekdays', 'weekends only for long rides')"
+
+**Key principle:** Make it clear this is a living document that makes coaching more personal and effective over time.
 
 ## Workflow: Philosophy Command
 
@@ -376,8 +542,9 @@ When user runs `/coach check-in`:
    ```
 
 2. **Load context:**
+   - **FIRST: Read coaching-notes.md** (if exists) for preferences, constraints, patterns
    - Read .config.json for goals, phase, philosophy, weekly hours target
-   - Keep context data for personalized advice
+   - Keep all context data for personalized advice
 
 3. **Analyze automatically - detect training pattern:**
 
@@ -547,6 +714,7 @@ When user runs `/coach profile`:
 When user runs `/coach analyze [activity-id]`:
 
 1. **Check configuration:**
+   - **Read coaching-notes.md first** (if exists) for context
    - Verify credentials exist
    - Load profile data if not already in context
 
@@ -597,6 +765,7 @@ When user runs `/coach analyze [activity-id]`:
 When user runs `/coach trends [days]`:
 
 1. **Check configuration:**
+   - **Read coaching-notes.md first** (if exists) for context
    - Verify credentials exist
    - Load profile if not in context
 
