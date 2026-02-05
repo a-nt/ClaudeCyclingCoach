@@ -84,6 +84,7 @@ Users can invoke this skill with:
 - `/coach context` - Set/review training context (hours, goals, phase) with smart inference
 - `/coach philosophy` - Set your training philosophy (Polarized, Sweet Spot, etc.)
 - `/coach profile` - Display athlete profile and training zones
+- `/coach check-in` - Holistic coaching check-in with personalized recommendations
 - `/coach analyze [activity-id]` - Analyze last or specific activity
 - `/coach trends [days]` - Show fitness trends (default: 30 days)
 - `/coach` - General coaching conversation
@@ -94,7 +95,7 @@ After any command, maintain context for follow-up questions without re-fetching 
 
 **BEFORE doing anything else, check what the user typed:**
 
-- If ARGUMENTS provided (setup, profile, trends, analyze, philosophy) → Execute that command
+- If ARGUMENTS provided (setup, profile, trends, analyze, philosophy, context, check-in) → Execute that command
 - If NO ARGUMENTS (just `/coach`) → Show the menu below
 
 **IMPORTANT: If invoked with no arguments (just `/coach`), ALWAYS show this menu first:**
@@ -106,6 +107,7 @@ Hey! I'm your cycling coach. What would you like to do?
   /coach context        - Set training context (hours, goals, phase) ⭐ SMART
   /coach philosophy     - Set your training approach (Polarized, Sweet Spot, etc.)
   /coach profile        - View your FTP, zones, and current fitness
+  /coach check-in       - Get personalized advice based on recent training ⭐ NEW
   /coach trends [days]  - Analyze your training load (default: 30 days)
   /coach analyze [id]   - Analyze a specific ride
 
@@ -354,6 +356,162 @@ When user runs `/coach context`:
    - Suggest running `/coach context` every 4-6 weeks
    - Or when major changes detected (e.g., CTL drops significantly)
    - "Your training pattern has changed. Run `/coach context` to update?"
+
+## Workflow: Check-in Command
+
+When user runs `/coach check-in`:
+
+**Purpose:** Holistic coaching check-in that analyzes recent training, current form, and provides personalized next-step recommendations. No questions asked - the data tells the story.
+
+1. **Fetch comprehensive data:**
+   ```bash
+   # Get 90-day wellness data for CTL trend analysis
+   node ~/.claude/skills/coach/scripts/intervals-api.js wellness --days 90
+
+   # Get recent activities for pattern analysis
+   node ~/.claude/skills/coach/scripts/intervals-api.js activities --limit 20
+
+   # Get current profile snapshot
+   node ~/.claude/skills/coach/scripts/intervals-api.js profile
+   ```
+
+2. **Load context:**
+   - Read .config.json for goals, phase, philosophy, weekly hours target
+   - Keep context data for personalized advice
+
+3. **Analyze automatically - detect training pattern:**
+
+   **A. Training Consistency:**
+   - Days since last activity (0-3 = active, 4-14 = break, >14 = comeback)
+   - Frequency last 14 days (activities per week)
+   - Pattern: consistent, sporadic, or inactive
+
+   **B. CTL Trend Analysis:**
+   - Current CTL vs 4 weeks ago
+   - Ramp rate: (current - 4wks ago) / 4
+   - Direction: building (>2/week), maintaining (-2 to +2), declining (<-2)
+
+   **C. TSB State:**
+   - Current TSB value
+   - Categorize: tired (<-30), optimal (-30 to -10), transitional (-10 to +10), fresh (>+10)
+
+   **D. Recent Training Pattern (last 14 days):**
+   - Average weekly TSS vs target
+   - Intensity distribution (% time in Z1-2 vs Z3 vs Z4-5)
+   - Philosophy alignment (e.g., Polarized = should be 80% Z1-2, 20% Z4-5)
+   - Red flags: too much Z3, no easy days, no hard days, etc.
+
+   **E. FTP Test Status:**
+   - Days since last FTP test (from context.ftpTestStatus)
+   - If >8 weeks and CTL building → suggest test
+   - If power curve from recent activity shows divergence → suggest test
+
+   **F. Goals Progress:**
+   - Compare current state to goals in context
+   - Time until goal events
+   - On track or need adjustment?
+
+4. **Pattern Recognition - Common Scenarios:**
+
+   **COMEBACK (no activity >14 days):**
+   - CTL declining
+   - TSB very positive
+   - Last activity >14 days ago
+   → Advice: Rebuild consistency first, easy Z2 volume, no intensity yet
+
+   **CONSISTENT TRAINING (active, good rhythm):**
+   - Last activity <3 days ago
+   - Regular pattern (3-6 activities/week)
+   - CTL building 5-8/week
+   - TSB in optimal range (-10 to -30)
+   → Advice: Stay the course, maintain current approach, specific next-week plan
+
+   **OVERREACHING (too hard, too fast):**
+   - TSB < -30 (or < -50 for high CTL)
+   - Ramp rate > 10 TSS/week
+   - Many consecutive hard days
+   - Recent activities all high TSS
+   → Advice: Recovery needed NOW, 2-3 easy days minimum
+
+   **COASTING (flatlined fitness):**
+   - CTL change < 5 points in 4 weeks
+   - TSB around 0 (transitional)
+   - Low average TSS
+   - Sporadic training
+   → Advice: Need stimulus to build fitness - increase volume or intensity
+
+   **DETRAINING (losing fitness):**
+   - CTL declining >5 points/4 weeks
+   - Sporadic activity pattern
+   - TSB positive
+   - Low frequency
+   → Advice: Increase consistency, set minimum weekly volume
+
+   **GOOD BUILD (ideal progression):**
+   - CTL building 5-8/week
+   - TSB in optimal zone (-10 to -30)
+   - Good intensity distribution
+   - Consistent pattern
+   → Advice: Excellent progress, maintain, maybe suggest recovery week timing
+
+   **MISALIGNED TRAINING (philosophy mismatch):**
+   - Philosophy = Polarized, but 40%+ time in Z3
+   - Philosophy = Sweet Spot, but no Z3 time
+   - No hard days for 2+ weeks (not building intensity)
+   - No easy days (all Z3+)
+   → Advice: Realign with philosophy, specific workout recommendations
+
+5. **Provide recommendations (4-6 sentences total):**
+
+   **Format:**
+   - **Current state** (1-2 sentences): What the data shows
+   - **Key insight** (1 sentence): Main finding or concern
+   - **Specific advice** (2-3 sentences): Concrete next steps for next 7-14 days
+   - Keep conversational, direct, actionable
+
+   **Example outputs:**
+
+   ```
+   You haven't ridden in 3 weeks and CTL dropped from 52 to 43. You're super fresh
+   (TSB +22) but losing fitness. Start with 4-5 easy Z2 rides this week, 1-2 hours
+   each, just rebuild consistency. Once you've got two weeks of regular riding, we
+   can add back intensity.
+   ```
+
+   ```
+   Nice rhythm - you're averaging 6.5 hours weekly with CTL climbing from 38 to 42
+   over the past month. Form at -16 is optimal for building fitness. One thing: 35%
+   of your time is in Z3 "no man's land" which doesn't align with Polarized. Next
+   week: two 3-hour Z2 rides and one proper interval session (Z4-5). Keep the hard
+   days hard and easy days easy.
+   ```
+
+   ```
+   CTL jumped from 48 to 62 in three weeks - that's aggressive ramping. TSB at -38
+   confirms you need recovery. Take 3-4 easy days (Z1-2 only, <90min), then resume
+   with lighter week (200-250 TSS total). Let the adaptations sink in.
+   ```
+
+   ```
+   CTL has flatlined at 55 for six weeks and TSB hovers around zero - you're just
+   maintaining. If your goal is the Gran Fondo in June, we need to start building.
+   Next two weeks: push to 400 TSS weekly with longer weekend rides (3-4 hours).
+   Time to stimulate some adaptation.
+   ```
+
+6. **Maintain context:**
+   - Keep all fetched data for follow-up questions
+   - User may ask "Why is Z3 bad?" or "How should I structure those intervals?"
+   - Answer without re-fetching
+
+**CRITICAL Communication Guidelines for Check-in:**
+
+- **NO questions** - analyze the data and give advice
+- **4-6 sentences total** (not a report)
+- **Lead with insight** not data dumps
+- **Specific recommendations** (days, hours, zones, workout types)
+- **Conversational tone** like texting your coach
+- **End with confidence** not questions (you're the expert)
 
 ## Workflow: Profile Command
 
