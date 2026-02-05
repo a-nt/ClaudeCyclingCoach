@@ -2,5 +2,29 @@
   "apiKey": "your-intervals-icu-api-key",
   "athleteId": "i12345",
   "trainingPhilosophy": "polarized",
-  "customPhilosophy": null
+  "customPhilosophy": null,
+  "context": {
+    "weeklyHours": 8,
+    "weeklyHoursTarget": 8,
+    "trainingDays": ["tuesday", "thursday", "saturday", "sunday"],
+    "currentPhase": "build",
+    "trainingConsistency": 4.5,
+    "lastContextUpdate": "2026-02-05",
+    "goals": [
+      {
+        "type": "race",
+        "name": "Gran Fondo",
+        "date": "2026-06-15",
+        "priority": "A"
+      }
+    ],
+    "constraints": [
+      "weekday mornings only"
+    ],
+    "ftpTestStatus": {
+      "lastTest": "2026-01-15",
+      "nextDue": "2026-03-15",
+      "currentFtp": 250
+    }
+  }
 }
