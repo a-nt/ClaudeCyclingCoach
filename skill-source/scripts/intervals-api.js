@@ -124,22 +124,33 @@ async function getProfile() {
   const config = loadConfig();
   try {
     const profile = await makeRequest(`/api/v1/athlete/${config.athleteId}`);
+
+    // Get cycling sport settings (first one with "Ride" type)
+    const cyclingSettings = profile.sportSettings?.find(s =>
+      s.types?.includes('Ride') || s.types?.includes('VirtualRide')
+    );
+
     return {
       success: true,
       data: {
         name: profile.name,
         athleteId: profile.id,
-        ftp: profile.ftp,
-        ftpWattsPerKg: profile.ftp_watts_per_kg,
-        weight: profile.weight,
-        maxHr: profile.max_hr,
-        restingHr: profile.resting_hr,
-        ltHr: profile.lt_hr,
-        powerZones: profile.power_zones,
-        hrZones: profile.hr_zones,
-        ctl: profile.ctl,
-        atl: profile.atl,
-        tsb: profile.rr
+        ftp: cyclingSettings?.ftp || null,
+        indoorFtp: cyclingSettings?.indoor_ftp || null,
+        ftpWattsPerKg: cyclingSettings?.ftp && profile.icu_weight
+          ? (cyclingSettings.ftp / profile.icu_weight).toFixed(2)
+          : null,
+        weight: profile.icu_weight || profile.weight || null,
+        maxHr: cyclingSettings?.max_hr || null,
+        restingHr: profile.icu_resting_hr || cyclingSettings?.resting_hr || null,
+        ltHr: cyclingSettings?.lthr || null,
+        powerZones: cyclingSettings?.power_zones || null,
+        powerZoneNames: cyclingSettings?.power_zone_names || null,
+        hrZones: cyclingSettings?.hr_zones || null,
+        hrZoneNames: cyclingSettings?.hr_zone_names || null,
+        ctl: profile.ctl || null,
+        atl: profile.atl || null,
+        tsb: profile.rr || null
       }
     };
   } catch (err) {
