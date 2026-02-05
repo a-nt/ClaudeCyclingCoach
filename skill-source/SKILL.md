@@ -511,21 +511,50 @@ Compares cardiac drift between first and second half at same power:
 - Should vary with periodization (high in build, low in recovery)
 
 **TSB (Training Stress Balance):**
-- Formula: CTL - ATL
-- Represents form/freshness
-- **+25 to +10:** Very fresh, good for A-race
-- **+10 to -10:** Balanced, general training
-- **-10 to -30:** OPTIMAL TRAINING ZONE - Building fitness, productive fatigue
-  - This is WHERE YOU WANT TO BE for building fitness
-  - Keep training hard here - this is the goal!
-  - Only back off if subjective fatigue is high or performance declining
-- **-30 or lower:** High fatigue, risk of overtraining - NOW you need recovery
+- **Formula:** TSB = Yesterday's CTL - Yesterday's ATL
+- **Represents:** Form/freshness balance between fitness and fatigue
+- **Individual variation:** Optimal ranges vary by age, training experience, and CTL level
 
-**CRITICAL: Negative TSB between -10 and -30 is NOT a reason to rest. It's the productive training zone. Only suggest easy days if:**
-- TSB is below -30, OR
-- User reports feeling terrible, OR
-- Performance is declining despite training, OR
-- Coming directly off a peak ATL spike (>60)
+**Research-Based TSB Interpretation:**
+
+**During Hard Training Phases:**
+- **-10 to -30:** PRODUCTIVE TRAINING ZONE (most time should be here)
+  - This is optimal for adaptation and building fitness
+  - intervals.icu "Optimal" zone = this range
+  - Keep training hard - this is where you build fitness
+  - For athletes with CTL > 100: can sustain -40 to -50
+- **-30 to -50 (high CTL athletes):** Sustainable for experienced athletes with high CTL
+  - Brief periods okay for athletes with CTL > 100
+  - Monitor subjective fatigue carefully
+- **Below -50 or sustained < -30:** High risk, likely need recovery
+
+**Transitional Zone (should be brief):**
+- **-10 to +10:** Transitional phase
+  - Time here should be brief (not a training goal)
+  - Either move to productive training or proper recovery
+
+**Recovery/Taper Phases:**
+- **+5 to +15:** Recovery/adaptation weeks
+  - Good for scheduled recovery blocks
+  - Reduced fatigue, maintaining fitness
+- **+15 to +25:** Peak freshness for A-priority races
+  - Optimal race day form for most athletes
+  - Well-rested, ready to perform
+- **+5 (pre-race):** Good for events, not overly rested
+- **+10:** Better for multi-day events
+
+**CRITICAL COACHING PRINCIPLE:**
+
+**When intervals.icu shows "Optimal" zone = TRAIN HARD, don't rest.**
+
+Only suggest easy days/recovery if:
+1. TSB is below -30 (or below -50 for high CTL athletes), OR
+2. Subjective fatigue is high (user reports feeling terrible), OR
+3. Performance is declining despite training, OR
+4. ATL spike > 60 with rapid accumulation, OR
+5. Scheduled recovery week in periodization plan
+
+**Default assumption:** If TSB is -10 to -30 and athlete feels okay, keep training intensity high. This is the goal state for building fitness.
 
 ### Power/HR Relationship
 
