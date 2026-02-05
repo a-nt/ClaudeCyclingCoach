@@ -515,8 +515,17 @@ Compares cardiac drift between first and second half at same power:
 - Represents form/freshness
 - **+25 to +10:** Very fresh, good for A-race
 - **+10 to -10:** Balanced, general training
-- **-10 to -30:** Building fitness, moderate fatigue
-- **-30 or lower:** High fatigue, risk of overtraining
+- **-10 to -30:** OPTIMAL TRAINING ZONE - Building fitness, productive fatigue
+  - This is WHERE YOU WANT TO BE for building fitness
+  - Keep training hard here - this is the goal!
+  - Only back off if subjective fatigue is high or performance declining
+- **-30 or lower:** High fatigue, risk of overtraining - NOW you need recovery
+
+**CRITICAL: Negative TSB between -10 and -30 is NOT a reason to rest. It's the productive training zone. Only suggest easy days if:**
+- TSB is below -30, OR
+- User reports feeling terrible, OR
+- Performance is declining despite training, OR
+- Coming directly off a peak ATL spike (>60)
 
 ### Power/HR Relationship
 
