@@ -10,8 +10,12 @@ Transform your training data into actionable coaching insights with power/heart 
 
 ## ✨ Features
 
-- 📈 **Activity Analysis** - Deep dive into power/HR coupling, zone distribution, and aerobic decoupling
-- 📊 **Fitness Trends** - Track CTL/ATL/TSB progression and training load patterns
+- 🎯 **Smart Check-ins** - Holistic coaching that analyzes recent training and provides personalized next-step recommendations
+- 📈 **Activity Analysis** - Deep dive into power/HR coupling, zone distribution, aerobic decoupling, VI, and EF
+- 📊 **Fitness Trends** - Track CTL/ATL/TSB progression with research-based interpretation and ramp rate monitoring
+- 🧠 **Context-Aware** - Remembers your goals, training phase, weekly hours, and philosophy for tailored advice
+- 🎨 **Training Philosophy** - Choose from Polarized (80/20), Sweet Spot, Traditional, or define your own
+- 💡 **Power Curve Analysis** - FTP estimation from 20-min power, rider profiling, and automatic test recommendations
 - 👤 **Profile Management** - View your FTP, zones, and key metrics at a glance
 - 💬 **Conversational Coaching** - Ask follow-up questions and get personalized advice
 - 🔒 **Privacy First** - Your data stays on your machine, no cloud processing
@@ -56,65 +60,80 @@ Follow the prompts to enter your intervals.icu credentials:
 | Command | Description |
 |---------|-------------|
 | `/coach setup` | Configure your intervals.icu credentials |
+| `/coach context` | Set training context (goals, hours, phase) with smart inference ⭐ |
+| `/coach philosophy` | Choose your training approach (Polarized, Sweet Spot, etc.) |
 | `/coach profile` | View your athlete profile and training zones |
+| `/coach check-in` | Get personalized recommendations based on recent training ⭐ NEW |
 | `/coach analyze [id]` | Analyze your last ride or a specific activity |
 | `/coach trends [days]` | Show fitness trends (default: 30 days) |
 | `/coach` | Start a general coaching conversation |
 
 ## 📸 Example Usage
 
+### Check-in (Personalized Coaching)
+
+```
+You: /coach check-in
+
+Coach: Nice rhythm - you're averaging 6.5 hours weekly with CTL climbing from
+38 to 42 over the past month. Form at -16 is optimal for building fitness. One
+thing: 35% of your time is in Z3 "no man's land" which doesn't align with
+Polarized. Next week: two 3-hour Z2 rides and one proper interval session (Z4-5).
+Keep the hard days hard and easy days easy.
+
+You: Why is Z3 bad?
+
+Coach: Z3 is the "tempo" zone - hard enough to create fatigue but not hard enough
+to drive VO2 max adaptations. With Polarized training, you want 80% easy (Z1-2)
+and 20% hard (Z4-5). Z3 gives you the worst of both worlds - too hard to recover
+from, too easy to build top-end fitness.
+```
+
+### Activity Analysis
+
 ```
 You: /coach analyze
 
-Coach: Let me analyze your last ride...
-
-# Activity Analysis: Morning Training Ride
-
-## Overview
-- Date: Feb 5, 2026
-- Duration: 1h 32m
-- Average Power: 215W (2.8 W/kg)
-- Normalized Power: 235W
-- Average HR: 152 bpm
-
-## Zone Distribution
-[Detailed breakdown with coaching insights...]
-
-## Aerobic Decoupling
-First half: 213W @ 149 bpm (1.43 W/bpm)
-Second half: 217W @ 155 bpm (1.40 W/bpm)
-Decoupling: 2.3% - Excellent aerobic fitness!
-
-## Coaching Recommendations
-1. Your aerobic base is strong - maintain current Z2 volume
-2. Consider adding 1-2 threshold sessions per week
-3. Recovery metrics look good - you're ready for intensity
+Coach: 1h32 threshold ride - solid 20-min power at 268W suggests FTP around 255W
+(your current is 250W). VI of 1.03 shows excellent pacing. Decoupling only 2.1%
+confirms strong aerobic base. Ready for an FTP test next week?
 
 You: What does this mean for my FTP?
 
-Coach: Based on your power curve and recent performances...
-[Personalized FTP guidance without re-fetching data]
+Coach: Your 20-min power of 268W × 0.95 = 255W estimated FTP, which is 5W higher
+than your current 250W setting. Since you've been building fitness (CTL 38→42)
+and this wasn't a maximal test, you're likely ready. Test when fresh - TSB around
++5 to +10 is ideal.
 ```
 
 ## 🧠 What Makes This Different
 
-### Intelligent Analysis
-- **Aerobic Decoupling** - Detects cardiac drift to assess aerobic fitness
-- **Interval Detection** - Automatically identifies sustained threshold efforts
-- **Zone Distribution** - Analyzes time in power and HR zones
-- **Power/HR Coupling** - Evaluates aerobic efficiency
+### Holistic Check-ins
+- **Smart Pattern Detection** - Identifies if you're overreaching, coasting, detraining, or building well
+- **Context-Aware Advice** - Considers your goals, training phase, and philosophy
+- **No Questions Asked** - Analyzes data automatically and gives direct recommendations
+- **Works Anytime** - Daily check-in or after months away, adjusts advice to your situation
 
-### Training Load Management
-- **CTL (Chronic Training Load)** - 42-day fitness trend
+### Comprehensive Metrics
+- **Aerobic Decoupling** - Detects cardiac drift to assess aerobic fitness
+- **Variability Index (VI)** - Measures pacing consistency (1.0 = perfect steady state)
+- **Efficiency Factor (EF)** - Tracks aerobic efficiency trends over time (NP/avg HR)
+- **Power Curve Analysis** - FTP estimation from 20-min power, rider profiling (sprinter vs TT)
+- **Interval Detection** - Automatically identifies sustained threshold efforts
+- **Zone Distribution** - Analyzes time in power and HR zones with philosophy alignment
+
+### Training Load Management (Research-Based)
+- **CTL (Chronic Training Load)** - 42-day fitness trend with safe ramp rate monitoring (5-8 TSS/week)
 - **ATL (Acute Training Load)** - 7-day fatigue monitoring
-- **TSB (Training Stress Balance)** - Form and freshness tracking
-- **Weekly Patterns** - Identifies load distribution and recovery
+- **TSB (Training Stress Balance)** - Evidence-based interpretation (-10 to -30 = optimal training zone)
+- **Overtraining Detection** - Warns when ramping too fast (>10 TSS/week)
+- **Philosophy Alignment** - Checks if training matches your chosen approach (Polarized, Sweet Spot, etc.)
 
 ### Conversational Context
 - Ask follow-up questions naturally
 - Maintains analysis context throughout conversation
 - No unnecessary API calls or re-fetching
-- Personalized coaching based on your goals
+- Personalized coaching based on your goals, phase, and constraints
 
 ## 🏗️ Architecture
 
@@ -144,22 +163,27 @@ skill-source/
 
 ### Power Zones (based on FTP)
 - **Z1 (<55%)** - Recovery
-- **Z2 (55-75%)** - Endurance base
-- **Z3 (75-90%)** - Tempo
+- **Z2 (55-75%)** - Endurance base (most time here for Polarized training)
+- **Z3 (75-90%)** - Tempo ("no man's land" - avoid excessive time here)
 - **Z4 (90-105%)** - Threshold
 - **Z5 (>105%)** - VO2 max
 
-### Training Load
-- **CTL** - Your fitness level (higher = more fit)
-- **ATL** - Your fatigue level (higher = more tired)
-- **TSB** - Your form (positive = fresh, negative = fatigued)
+### Training Load (Research-Based Interpretation)
+- **CTL** - Your fitness level (40-60 recreational, 80-100 competitive, 120+ elite)
+- **ATL** - Your fatigue level (7-day average)
+- **TSB** - Your form (CTL - ATL)
+  - **-10 to -30**: OPTIMAL training zone (build fitness here!)
+  - **-30 to -50**: Sustainable for high fitness athletes (CTL >100)
+  - **+15 to +25**: Peak freshness for racing
+  - **-10 to +10**: Transitional (should be brief)
 
-Safe CTL ramp rate: 5-8 points/week
+**Safe CTL ramp rate**: 5-8 TSS/week (>10/week = injury risk)
 
-### Aerobic Decoupling
-- **<5%** - Excellent aerobic fitness
-- **5-10%** - Acceptable, room for improvement
-- **>10%** - Needs attention (fatigue or insufficient base)
+### Efficiency Metrics
+- **Aerobic Decoupling**: <5% excellent, 5-10% acceptable, >10% needs work
+- **Variability Index (VI)**: <1.05 great pacing, >1.10 high variability
+- **Efficiency Factor (EF)**: NP/avg HR - track trends over time (improving = better fitness)
+- **Power Curve**: Best power at 5s, 1min, 5min, 20min (used for FTP estimation)
 
 ## 🛠️ Development
 
