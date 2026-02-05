@@ -69,6 +69,7 @@ The user will see Bash tool calls (Claude Code shows them). That's fine. Your jo
 Users can invoke this skill with:
 
 - `/coach setup` - Configure intervals.icu API credentials
+- `/coach philosophy` - Set your training philosophy (Polarized, Sweet Spot, etc.)
 - `/coach profile` - Display athlete profile and training zones
 - `/coach analyze [activity-id]` - Analyze last or specific activity
 - `/coach trends [days]` - Show fitness trends (default: 30 days)
@@ -82,6 +83,7 @@ After any command, maintain context for follow-up questions without re-fetching 
 Hey! I'm your cycling coach. What would you like to do?
 
   /coach setup          - First-time setup (connect intervals.icu)
+  /coach philosophy     - Set your training approach (Polarized, Sweet Spot, etc.)
   /coach profile        - View your FTP, zones, and current fitness
   /coach trends [days]  - Analyze your training load (default: 30 days)
   /coach analyze [id]   - Analyze a specific ride
@@ -90,6 +92,8 @@ Or just ask me anything about training, like:
   - "Should I train hard today?"
   - "What should I focus on this week?"
   - "How's my fitness trending?"
+
+Current training philosophy: [polarized] (change with /coach philosophy)
 
 What can I help with?
 ```
@@ -106,9 +110,13 @@ What can I help with?
    ```json
    {
      "apiKey": "your-api-key",
-     "athleteId": "i12345"
+     "athleteId": "i12345",
+     "trainingPhilosophy": "polarized",
+     "customPhilosophy": null
    }
    ```
+
+   Default philosophy is "polarized" if not explicitly set.
 
 3. **Setup command**: If neither exists, guide user through `/coach setup`
 
@@ -143,6 +151,74 @@ When user runs `/coach setup`:
 4. **Test connection:**
    - Run profile command to verify credentials work
    - Display basic athlete info on success
+
+5. **After successful setup, suggest philosophy:**
+   - "Great! One more thing - what's your training approach?"
+   - Offer to run `/coach philosophy` to set it up
+   - Or skip and use default (Polarized)
+
+## Workflow: Philosophy Command
+
+When user runs `/coach philosophy`:
+
+1. **Check for existing philosophy:**
+   - Read ~/.claude/skills/coach/.config.json
+   - If philosophy already set, show current choice
+
+2. **Present options clearly:**
+   ```
+   What's your training philosophy?
+
+   1. Polarized (80% easy, 20% hard) ⭐ RECOMMENDED
+      - Best for: Most people, sustainable long-term
+      - 2-3 hard days/week, rest is easy Z2
+
+   2. Sweet Spot (focus on 88-94% FTP)
+      - Best for: Time-crunched (6-8 hrs/week)
+      - 3-4 sessions/week in the "sweet spot"
+
+   3. Traditional Base/Build/Peak
+      - Best for: Long-term development, racing
+      - Months of Z2, then add intensity
+
+   4. High Volume Low Intensity (15+ hrs/week)
+      - Best for: Ultra-endurance, high availability
+      - Mostly Z2, minimal intensity
+
+   5. Threshold-Focused
+      - Best for: Short events, experienced athletes
+      - Lots of Z4/FTP work
+
+   6. Custom (describe your approach)
+
+   Current: [Polarized] (default if not set)
+   Choose 1-6:
+   ```
+
+3. **Handle selection:**
+   - Options 1-5: Store the philosophy name
+   - Option 6: Ask user to describe their approach in 1-2 sentences
+   - Update ~/.claude/skills/coach/.config.json with choice
+
+4. **Confirm and explain:**
+   - Show what this means for training recommendations
+   - "With Polarized, I'll emphasize lots of easy Z2 and keeping hard days HARD"
+   - Or for Sweet Spot: "I'll focus recommendations around 88-94% FTP efforts"
+
+5. **Store the configuration:**
+   ```json
+   {
+     "apiKey": "...",
+     "athleteId": "...",
+     "trainingPhilosophy": "polarized",
+     "customPhilosophy": null  // or user's description if custom
+   }
+   ```
+
+6. **Integration with coaching:**
+   - Use philosophy when giving training advice
+   - "You're doing Polarized - that ride was too much Z3. Next time: easier or harder, not in-between."
+   - "Sweet Spot approach - perfect, that 90% FTP session hits the mark."
 
 ## Workflow: Profile Command
 
@@ -477,6 +553,17 @@ Once you have activities:
 - **Ask back:** End most responses with a question to keep the conversation going
 - **No jargon dumps:** Introduce one concept at a time
 - **Match their energy:** Quick question = quick answer. "Tell me everything" = comprehensive response
+
+**Using Training Philosophy:**
+- **Always reference their philosophy** when giving training advice
+- Check config for trainingPhilosophy field (defaults to "polarized" if not set)
+- Tailor recommendations to their approach:
+  - **Polarized:** "That's too much Z3 - go easier or harder, not in-between"
+  - **Sweet Spot:** "Perfect - 90% FTP is right in your sweet spot range"
+  - **Traditional:** "Still in base phase - keep it Z2, intensity comes later"
+  - **HVLI:** "Add more volume before intensity - you need 15+ hrs first"
+  - **Threshold:** "Good FTP work, but watch for burnout"
+  - **Custom:** Reference their custom description
 
 **Voice Examples:**
 

@@ -1,4 +1,6 @@
 {
   "apiKey": "your-intervals-icu-api-key",
-  "athleteId": "i12345"
+  "athleteId": "i12345",
+  "trainingPhilosophy": "polarized",
+  "customPhilosophy": null
 }
