@@ -33,10 +33,10 @@ git clone https://github.com/a-nt/cycling-coach-skill.git
 cd cycling-coach-skill
 
 # Create symlink to Claude Code skills directory
-ln -s "$(pwd)/skill-source" ~/.claude/skills/cycling-coach
+ln -s "$(pwd)/skill-source" ~/.claude/skills/coach
 
 # Or copy directly
-cp -r skill-source ~/.claude/skills/cycling-coach
+cp -r skill-source ~/.claude/skills/coach
 ```
 
 ### Configuration

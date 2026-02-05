@@ -16,13 +16,13 @@ AI-powered cycling coach that analyzes training data from intervals.icu. Get int
 Copy this directory to your Claude Code skills folder:
 
 ```bash
-cp -r cycling-coach ~/.claude/skills/
+cp -r coach ~/.claude/skills/
 ```
 
 Or clone from a repository:
 
 ```bash
-git clone <repo-url> ~/.claude/skills/cycling-coach
+git clone <repo-url> ~/.claude/skills/coach
 ```
 
 ### 2. Get Your intervals.icu Credentials
@@ -70,7 +70,7 @@ Follow the prompts to enter your credentials.
 
 Copy the example config:
 ```bash
-cp ~/.claude/skills/cycling-coach/.config.json.example ~/.claude/skills/cycling-coach/.config.json
+cp ~/.claude/skills/coach/.config.json.example ~/.claude/skills/coach/.config.json
 ```
 
 Edit the file with your credentials:
@@ -83,7 +83,7 @@ Edit the file with your credentials:
 
 Set secure permissions:
 ```bash
-chmod 600 ~/.claude/skills/cycling-coach/.config.json
+chmod 600 ~/.claude/skills/coach/.config.json
 ```
 
 ## Usage
