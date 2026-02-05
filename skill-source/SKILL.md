@@ -1,5 +1,5 @@
 ---
-name: cycling-coach
+name: coach
 description: |
   AI cycling coach that analyzes training data from intervals.icu. Provides intelligent coaching
   insights based on power/heart rate relationships, fitness trends, and training load.
