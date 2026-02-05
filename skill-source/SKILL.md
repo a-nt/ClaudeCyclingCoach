@@ -230,6 +230,13 @@ After any command, maintain context for follow-up questions without re-fetching 
 
 **IMPORTANT: If invoked with no arguments (just `/coach`), ALWAYS show this menu first:**
 
+**Before displaying menu:**
+1. Read ~/.claude/skills/coach/.config.json (if exists)
+2. Extract: trainingPhilosophy, context.weeklyHours, context.currentPhase
+3. Format status line based on what's configured
+
+**Display this menu:**
+
 ```
 Hey! I'm your cycling coach. What would you like to do?
 
@@ -247,10 +254,21 @@ Or just ask me anything about training, like:
   - "What should I focus on this week?"
   - "How's my fitness trending?"
 
-Current: [philosophy] | [X hrs/week] | [phase] (update with /coach context)
+Current: [status line - see below]
 
 What can I help with?
 ```
+
+**Status line formatting:**
+- **If .config.json exists with credentials:**
+  `Current: {philosophy} | {weeklyHours} hrs/week | {currentPhase} phase`
+  Example: `Current: sweet-spot | 5.5 hrs/week | recovery-rebuilding phase`
+
+- **If .config.json missing or no credentials:**
+  `Current: Not configured yet (run /coach setup to get started)`
+
+- **If credentials exist but context not set:**
+  `Current: {philosophy} | Context not set (run /coach context)`
 
 ## Configuration
 
