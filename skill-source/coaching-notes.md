@@ -3,7 +3,6 @@
 ## Training Preferences
 - Prefers not to do formal FTP tests - dislikes rigid test protocols
 - Estimates FTP from sustained efforts instead: "raise the floor from below"
-- Example approach: 30min at 300W → estimates ~290W FTP range
 - Use power curve data and sustained threshold efforts for FTP updates
 
 *Last updated: 2026-02-05*
