@@ -6,6 +6,7 @@ public class AnalysisResult
     public object? Decoupling { get; set; }
     public object? Intervals { get; set; }
     public object? PowerHrRelationship { get; set; }
+    public object? Charts { get; set; }
 }
 
 public static class AnalysisService
@@ -57,6 +58,9 @@ public static class AnalysisService
 
         // Calculate power/HR relationship
         result.PowerHrRelationship = CalculatePowerHrRelationship(activity);
+
+        // Generate ASCII charts
+        result.Charts = GenerateCharts(activity, profile, result);
 
         return result;
     }
@@ -260,5 +264,108 @@ public static class AnalysisService
         {
             return "Low efficiency - consider aerobic base development";
         }
+    }
+
+    private static object? GenerateCharts(ApiActivity activity, ApiProfile? profile, AnalysisResult result)
+    {
+        var charts = new Dictionary<string, string>();
+
+        // Ride summary box
+        var ftp = profile?.SportSettings?
+            .FirstOrDefault(s => s.Types?.Contains("Ride") == true || s.Types?.Contains("VirtualRide") == true)
+            ?.Ftp;
+
+        charts["rideSummary"] = ChartService.GenerateRideSummary(activity, ftp);
+
+        // Power curve chart
+        if (activity.PowerCurve != null && activity.PowerCurve.Count > 0)
+        {
+            charts["powerCurve"] = ChartService.GeneratePowerCurveChart(activity.PowerCurve, ftp);
+        }
+
+        // Zone distribution chart
+        if (activity.IcuZoneTimes.HasValue)
+        {
+            try
+            {
+                var zoneTimes = ParseZoneTimes(activity.IcuZoneTimes.Value);
+                var totalSeconds = activity.MovingTime ?? activity.ElapsedTime ?? 0;
+                var zoneNames = new[] { "Z1", "Z2", "Z3", "Z4", "Z5" };
+
+                if (zoneTimes.Count > 0 && totalSeconds > 0)
+                {
+                    charts["zoneDistribution"] = ChartService.GenerateZoneDistributionChart(zoneTimes, totalSeconds, zoneNames);
+                }
+            }
+            catch
+            {
+                // Ignore zone parsing errors
+            }
+        }
+
+        // Decoupling chart
+        if (result.Decoupling != null)
+        {
+            var decouplingData = result.Decoupling as dynamic;
+            if (decouplingData != null)
+            {
+                var firstHalf = decouplingData.firstHalf;
+                var secondHalf = decouplingData.secondHalf;
+                var decouplingPercent = double.Parse(decouplingData.decouplingPercent);
+                var firstRatio = double.Parse(firstHalf.efficiency);
+                var secondRatio = double.Parse(secondHalf.efficiency);
+
+                charts["decoupling"] = ChartService.GenerateDecouplingChart(firstRatio, secondRatio, decouplingPercent);
+            }
+        }
+
+        // Interval timeline
+        if (result.Intervals != null && activity.Streams != null)
+        {
+            var intervalsList = new List<DetectedInterval>();
+            var intervalsData = result.Intervals as List<object>;
+
+            if (intervalsData != null)
+            {
+                foreach (dynamic interval in intervalsData)
+                {
+                    var detectedInterval = new DetectedInterval
+                    {
+                        Start = interval.startTime,
+                        End = interval.startTime + interval.duration,
+                        AveragePower = interval.avgPower,
+                        FtpPercent = double.Parse(interval.percentFtp)
+                    };
+                    intervalsList.Add(detectedInterval);
+                }
+
+                if (intervalsList.Count > 0)
+                {
+                    var totalSeconds = activity.MovingTime ?? activity.ElapsedTime ?? 0;
+                    charts["intervals"] = ChartService.GenerateIntervalTimeline(intervalsList, totalSeconds);
+                }
+            }
+        }
+
+        return charts.Count > 0 ? charts : null;
+    }
+
+    private static Dictionary<int, double> ParseZoneTimes(System.Text.Json.JsonElement zoneTimes)
+    {
+        var result = new Dictionary<int, double>();
+
+        if (zoneTimes.ValueKind == System.Text.Json.JsonValueKind.Array)
+        {
+            var array = zoneTimes.EnumerateArray().ToList();
+            for (int i = 0; i < array.Count; i++)
+            {
+                if (array[i].ValueKind == System.Text.Json.JsonValueKind.Number)
+                {
+                    result[i + 1] = array[i].GetDouble();
+                }
+            }
+        }
+
+        return result;
     }
 }
