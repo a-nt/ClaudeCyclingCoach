@@ -752,9 +752,25 @@ When user runs `/coach analyze [activity-id]`:
    - Fetches the activity with streams
    - Fetches the profile (for FTP/zones)
    - Runs all analysis calculations
-   - Returns comprehensive analysis results
+   - Returns comprehensive analysis results with embedded ASCII charts
 
-4. **Interpret results:**
+4. **Display ASCII charts:**
+   The analyze command returns a `charts` object containing ANSI-formatted visualizations:
+   - `rideSummary`: Formatted ride metrics in a table
+   - `zoneDistribution`: Color-coded power zone distribution bar chart
+   - `hrZoneDistribution`: Color-coded HR zone distribution bar chart (if HR data available)
+   - `powerCurve`: Power curve analysis (if available)
+   - `decoupling`: First/second half comparison chart (if applicable)
+   - `intervals`: Detected interval timeline (if detected)
+
+   **CRITICAL:** Output these charts directly without modification. The strings contain ANSI escape codes for colors and formatting. Simply display them as-is:
+   ```
+   console.log(charts.rideSummary)
+   console.log(charts.zoneDistribution)
+   console.log(charts.hrZoneDistribution)
+   ```
+
+5. **Interpret results:**
    - Reference examples/activity-analysis.md for formatting
    - Provide comprehensive analysis covering:
      - Overview metrics (TSS, IF, NP)
@@ -838,6 +854,20 @@ When user runs `/coach trends [days]`:
 - **Tempo ride:** 50-60% Z2, 20-30% Z3, <10% Z4+
 - **Interval session:** Variable, significant Z4-Z5 time
 - **Race:** Highly variable, often high Z3-Z5
+
+**Heart Rate Zones:**
+- **Z1 (<68% max):** Recovery, very light
+- **Z2 (69-83% max):** Aerobic endurance, comfortable
+- **Z3 (84-94% max):** Tempo, moderately hard
+- **Z4 (95-105% max):** Threshold, hard but sustainable
+- **Z5 (>105% max):** VO2 max, very hard
+
+**Power vs HR zones:**
+- HR lags behind power (takes time to respond)
+- Indoor rides: HR often 5-10 bpm lower than outdoor
+- Heat, fatigue, dehydration increase HR for same power
+- Cardiac drift: HR rises over time at same power (normal)
+- Compare both for full picture of ride intensity
 
 ### Aerobic Decoupling
 
@@ -1253,15 +1283,20 @@ Located: ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll
 Execution: `dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll <command>`
 
 Commands:
-- `profile` - Fetch athlete profile with FTP, zones, and current fitness metrics
+- `profile` - Fetch athlete profile with FTP, zones, and current fitness metrics. Returns charts for power and HR zones.
 - `activities --limit N` - List recent activities (default: 10)
 - `activity <id>` - Fetch specific activity with power/HR streams
-- `wellness --days N` - Fetch CTL/ATL/TSB data for date range (default: 30 days)
-- `analyze <id>` - Comprehensive activity analysis with VI, EF, decoupling, intervals, zones
+- `wellness --days N` - Fetch CTL/ATL/TSB data for date range (default: 90 days). Returns fitness trend chart.
+- `analyze <id>` - Comprehensive activity analysis with VI, EF, decoupling, intervals, zones. Returns multiple ASCII charts with ANSI color codes.
 
 Output: JSON with data or error details
 
-All commands return structured JSON for easy parsing and context preservation.
+All commands return structured JSON. The `analyze`, `profile`, and `wellness` commands include a `charts` object containing ANSI-formatted ASCII visualizations (bar charts, tables, timelines). Display these chart strings directly without modification - they contain ANSI escape codes for colors and box-drawing characters.
+
+**Chart types returned:**
+- **analyze**: rideSummary, zoneDistribution, hrZoneDistribution, powerCurve, decoupling, intervals
+- **profile**: powerZones, hrZones
+- **wellness**: fitnessTrend
 
 ## Example Session Flow
 
