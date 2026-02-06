@@ -34,7 +34,7 @@ public static class ChartService
         }
 
         chart.AppendLine("     └────────────────────┴");
-        chart.AppendLine("     0%                 100%");
+        chart.AppendLine("     0%                100%");
 
         return chart.ToString();
     }
@@ -224,8 +224,13 @@ public static class ChartService
         var maxHr = activity.MaxHr;
         var ef = activity.GetEfficiencyFactor();
 
+        // Truncate long activity names to fit
+        var name = activity.Name ?? "Activity";
+        if (name.Length > 35)
+            name = name.Substring(0, 32) + "...";
+
         chart.AppendLine("┌─────────────────────────────────────────────────────┐");
-        chart.AppendLine($"│ 🚴 {activity.Name,-30} {duration,7} {distance,8} │");
+        chart.AppendLine($"│ {name,-38} {duration,8} {distance,6} │");
         chart.AppendLine("├─────────────────────────────────────────────────────┤");
 
         if (avgPower.HasValue && np.HasValue)
@@ -239,6 +244,18 @@ public static class ChartService
         {
             var efStr = ef.HasValue ? $"EF: {ef:F2}" : "";
             chart.AppendLine($"│ HR      Avg: {avgHr,3} │ Max: {maxHr,3}    │ {efStr,-22} │");
+        }
+
+        // Always show at least basic info if no power/HR
+        if (!avgPower.HasValue && !avgHr.HasValue)
+        {
+            var tss = activity.GetTrainingLoad();
+            var cadence = activity.AverageCadence ?? activity.AvgCadence;
+
+            var tssStr = tss.HasValue ? $"TSS: {tss:F0}" : "";
+            var cadenceStr = cadence.HasValue ? $"Cadence: {cadence:F0} rpm" : "";
+
+            chart.AppendLine($"│ {tssStr,-25} {cadenceStr,-27} │");
         }
 
         chart.AppendLine("└─────────────────────────────────────────────────────┘");
