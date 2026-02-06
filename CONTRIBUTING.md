@@ -8,7 +8,7 @@ Thanks for your interest in contributing! This skill helps cyclists get AI-power
 
 Found a bug or have a feature request?
 
-1. Check [existing issues](https://github.com/a-nt/cycling-coach-skill/issues) first
+1. Check [existing issues](https://github.com/a-nt/ClaudeCyclingCoach/issues) first
 2. Create a new issue with:
    - Clear description of the problem/feature
    - Steps to reproduce (for bugs)
@@ -51,8 +51,8 @@ Found a bug or have a feature request?
 
 ```bash
 # Clone your fork
-git clone https://github.com/YOUR-USERNAME/cycling-coach-skill.git
-cd cycling-coach-skill
+git clone https://github.com/YOUR-USERNAME/ClaudeCyclingCoach.git
+cd ClaudeCyclingCoach
 
 # Link to Claude Code skills directory (root is the skill)
 ln -s "$(pwd)" ~/.claude/skills/coach

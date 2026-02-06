@@ -51,8 +51,8 @@ For best results, configure your device or platform to sync directly to interval
 
 ```bash
 # Clone the repository
-git clone https://github.com/a-nt/cycling-coach-skill.git
-cd cycling-coach-skill
+git clone https://github.com/a-nt/ClaudeCyclingCoach.git
+cd ClaudeCyclingCoach
 
 # Symlink repository root to Claude Code skills directory
 ln -s "$(pwd)" ~/.claude/skills/coach
