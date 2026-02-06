@@ -362,14 +362,14 @@ public static class ChartService
         var zoneNames = new[] { "Recovery", "Endurance", "Tempo", "Threshold", "VO2max", "Anaerobic", "Neuromuscular" };
         var zoneColors = new[] { "grey", "blue", "green", "yellow", "orange1", "red", "red" };
 
-        for (int i = 0; i < Math.Min(zones.Length - 1, zoneNames.Length); i++)
+        for (int i = 0; i < Math.Min(zones.Length, zoneNames.Length); i++)
         {
-            var lowerPercent = zones[i];
-            var upperPercent = zones[i + 1];
+            var lowerPercent = i == 0 ? 0 : zones[i - 1];
+            var upperPercent = zones[i];
             var lowerWatts = (int)(ftp * lowerPercent / 100.0);
-            var upperWatts = i < zones.Length - 2 ? (int)(ftp * upperPercent / 100.0) : 999;
+            var upperWatts = (int)(ftp * upperPercent / 100.0);
 
-            var range = upperWatts < 999 ? $"{lowerWatts}-{upperWatts}W" : $"{lowerWatts}W+";
+            var range = i < zones.Length - 1 ? $"{lowerWatts}-{upperWatts}W" : $"{lowerWatts}W+";
             var color = i < zoneColors.Length ? zoneColors[i] : "white";
 
             table.AddRow(
