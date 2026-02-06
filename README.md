@@ -309,7 +309,7 @@ Built with:
 
 ## 📄 License
 
-MIT License - see [LICENSE.txt](LICENSE.txt)
+MIT License - see [LICENSE](LICENSE)
 
 ## 🌟 Star History
 

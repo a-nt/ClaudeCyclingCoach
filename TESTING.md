@@ -6,7 +6,7 @@
    ```bash
    ls -la ~/.claude/skills/coach/
    ```
-   Should see: SKILL.md, bin/, src/, examples/, README.md, LICENSE.txt, .config.json.example
+   Should see: SKILL.md, bin/, src/, examples/, README.md, LICENSE, .config.json.example
 
 2. **Verify .NET runtime:**
    ```bash
