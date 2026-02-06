@@ -5,7 +5,7 @@
 Transform your training data into actionable coaching insights with power/heart rate analysis, fitness trends, and personalized recommendations.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET 10](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 [![intervals.icu](https://img.shields.io/badge/intervals.icu-integrated-blue.svg)](https://intervals.icu)
 
 ## ✨ Features
@@ -138,7 +138,8 @@ and this wasn't a maximal test, you're likely ready. Test when fresh - TSB aroun
 - **Efficiency Factor (EF)** - Tracks aerobic efficiency trends over time (NP/avg HR)
 - **Power Curve Analysis** - FTP estimation from 20-min power, rider profiling (sprinter vs TT)
 - **Interval Detection** - Automatically identifies sustained threshold efforts
-- **Zone Distribution** - Analyzes time in power and HR zones with philosophy alignment
+- **Zone Distribution** - Analyzes time in both power zones (7 zones) and HR zones (5 zones) with philosophy alignment
+- **Color-Coded Charts** - ASCII visualizations with ANSI colors for power and HR zone distribution
 
 ### Training Load Management (Research-Based)
 - **CTL (Chronic Training Load)** - 42-day fitness trend with safe ramp rate monitoring (5-8 TSS/week)
@@ -206,7 +207,7 @@ cycling-coach/                  # Root IS the skill (symlink to ~/.claude/skills
 ## 📖 Understanding the Metrics
 
 ### Power Zones (based on FTP) - Color Coded! 🎨
-- **Z1 (<55%)** - 🔘 Grey - Recovery
+- **Z1 (0-55%)** - 🔘 Grey - Recovery
 - **Z2 (55-75%)** - 🔵 Blue - Endurance base (most time here for Polarized training)
 - **Z3 (75-90%)** - 🟢 Green - Tempo ("no man's land" - avoid excessive time here)
 - **Z4 (90-105%)** - 🟡 Yellow - Threshold
@@ -214,7 +215,14 @@ cycling-coach/                  # Root IS the skill (symlink to ~/.claude/skills
 - **Z6 (120-150%)** - 🔴 Red - Anaerobic
 - **Z7 (>150%)** - 🔴 Red - Neuromuscular
 
-All charts include ANSI color codes for terminal display!
+### Heart Rate Zones (based on Max HR) - Color Coded! 🎨
+- **Z1 (0-66%)** - 🔘 Grey - Recovery
+- **Z2 (66-81%)** - 🔵 Blue - Aerobic/Endurance
+- **Z3 (81-87%)** - 🟢 Green - Tempo
+- **Z4 (87-93%)** - 🟡 Yellow - Threshold
+- **Z5 (93-100%)** - 🔴 Red - Max effort
+
+All power and HR charts include ANSI color codes for rich terminal display!
 
 ### Training Load (Research-Based Interpretation)
 - **CTL** - Your fitness level (40-60 recreational, 80-100 competitive, 120+ elite)
@@ -269,7 +277,7 @@ dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 30
 
 **Test Coverage:**
 - ✅ Analysis calculations (decoupling, intervals, power/HR relationship)
-- ✅ Chart generation (all 5 chart types)
+- ✅ Chart generation (9 chart types: power zones, HR zones, zone distribution, HR zone distribution, power curve, decoupling, intervals, ride summary, fitness trend)
 - ✅ Configuration serialization
 - ✅ Edge cases and null handling
 
