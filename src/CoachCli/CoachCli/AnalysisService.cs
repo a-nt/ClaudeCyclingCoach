@@ -290,16 +290,17 @@ public static class AnalysisService
             {
                 var zoneTimes = ParseZoneTimes(activity.IcuZoneTimes.Value);
                 var totalSeconds = activity.MovingTime ?? activity.ElapsedTime ?? 0;
-                var zoneNames = new[] { "Z1", "Z2", "Z3", "Z4", "Z5" };
+                var zoneNames = new[] { "Z1 Recovery", "Z2 Endurance", "Z3 Tempo", "Z4 Threshold", "Z5 VO2max", "Z6 Anaerobic", "Z7 Neuromuscular" };
 
                 if (zoneTimes.Count > 0 && totalSeconds > 0)
                 {
                     charts["zoneDistribution"] = ChartService.GenerateZoneDistributionChart(zoneTimes, totalSeconds, zoneNames);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore zone parsing errors
+                // Log zone parsing errors for debugging
+                Console.Error.WriteLine($"Zone chart error: {ex.Message}");
             }
         }
 

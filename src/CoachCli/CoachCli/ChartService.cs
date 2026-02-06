@@ -1,3 +1,6 @@
+using Spectre.Console;
+using Spectre.Console.Rendering;
+
 namespace CoachCli;
 
 public class WellnessDataPoint
@@ -11,14 +14,38 @@ public class WellnessDataPoint
 public static class ChartService
 {
     /// <summary>
+    /// Render a Spectre.Console IRenderable to a string with ANSI colors
+    /// </summary>
+    private static string RenderToString(IRenderable renderable)
+    {
+        var stringWriter = new StringWriter();
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Ansi = AnsiSupport.Yes,
+            ColorSystem = ColorSystemSupport.Standard,
+            Out = new AnsiConsoleOutput(stringWriter)
+        });
+
+        console.Write(renderable);
+        return stringWriter.ToString();
+    }
+
+    /// <summary>
     /// Generate a horizontal bar chart for zone distribution
     /// </summary>
     public static string GenerateZoneDistributionChart(Dictionary<int, double> zoneTimes, int totalSeconds, string[] zoneNames)
     {
-        var chart = new System.Text.StringBuilder();
-        chart.AppendLine("\nTime in Power Zones\n");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title("[bold]Time in Power Zones[/]")
+            .AddColumn(new TableColumn("Zone").Centered())
+            .AddColumn(new TableColumn("Distribution").Centered())
+            .AddColumn(new TableColumn("% Time").RightAligned())
+            .AddColumn(new TableColumn("Minutes").RightAligned());
 
-        for (int zone = 1; zone <= 5; zone++)
+        var zoneColors = new[] { "grey", "blue", "green", "yellow", "orange1", "red", "red" };
+
+        for (int zone = 1; zone <= 7; zone++)
         {
             if (!zoneTimes.ContainsKey(zone)) continue;
 
@@ -27,16 +54,23 @@ public static class ChartService
             var minutes = (int)(seconds / 60);
 
             var barLength = (int)(percentage / 5); // 20 chars = 100%
-            var bar = new string('█', Math.Min(barLength, 20)) + new string('░', Math.Max(20 - barLength, 0));
+            var filledBar = new string('█', Math.Min(barLength, 20));
+            var emptyBar = new string('░', Math.Max(20 - barLength, 0));
 
             var zoneName = zone <= zoneNames.Length ? zoneNames[zone - 1] : $"Z{zone}";
-            chart.AppendLine($"{zoneName,-4} {bar} {percentage,3:F0}%  ━━━ {minutes,3}min ━━━");
+            var color = zone <= zoneColors.Length ? zoneColors[zone - 1] : "white";
+
+            var coloredBar = $"[{color}]{filledBar}[/]{emptyBar}";
+
+            table.AddRow(
+                $"[{color}]{zoneName}[/]",
+                coloredBar,
+                $"{percentage:F0}%",
+                $"{minutes}min"
+            );
         }
 
-        chart.AppendLine("     └────────────────────┴");
-        chart.AppendLine("     0%                100%");
-
-        return chart.ToString();
+        return RenderToString(table);
     }
 
     /// <summary>
@@ -47,8 +81,16 @@ public static class ChartService
         if (powerCurve == null || powerCurve.Count == 0)
             return string.Empty;
 
-        var chart = new System.Text.StringBuilder();
-        chart.AppendLine("\nPower Curve Analysis\n");
+        var panel = new Panel(GeneratePowerCurveContent(powerCurve, ftp))
+            .Header("[bold]Power Curve Analysis[/]")
+            .Border(BoxBorder.Rounded);
+
+        return RenderToString(panel);
+    }
+
+    private static string GeneratePowerCurveContent(Dictionary<string, int> powerCurve, int? ftp)
+    {
+        var content = new System.Text.StringBuilder();
 
         // Get key durations we care about
         var durations = new[] { "5", "60", "300", "1200" };
@@ -64,58 +106,33 @@ public static class ChartService
         }
 
         if (values.Count == 0)
-            return string.Empty;
+            return "No power curve data available";
 
-        // Find max for scaling
-        int maxPower = values.Max(v => v.power);
-        int scale = 10; // Each line represents this many watts
-
-        // Draw chart
-        for (int w = maxPower; w >= 0; w -= scale * 5)
-        {
-            var line = $"{w,4}W ┤";
-
-            foreach (var (label, power) in values)
-            {
-                if (power >= w - scale && power < w + scale)
-                    line += " ●";
-                else
-                    line += "  ";
-            }
-
-            chart.AppendLine(line);
-        }
-
-        chart.AppendLine("     └────┴────┴────┴────►");
-        chart.Append("      ");
-        foreach (var (label, _) in values)
-        {
-            chart.Append($"{label,-5}");
-        }
-        chart.AppendLine();
-
-        // Add annotations
-        chart.AppendLine();
+        // Show values
         foreach (var (label, power) in values)
         {
-            chart.AppendLine($"{label,4}: {power}W");
+            var color = power > 400 ? "red" : power > 300 ? "orange1" : power > 250 ? "yellow" : "green";
+            content.AppendLine($"[{color}]{label,4}: {power}W[/]");
         }
 
         // FTP estimation from 20-min power
         if (powerCurve.TryGetValue("1200", out int power20min))
         {
             var estimatedFtp = (int)(power20min * 0.95);
-            chart.AppendLine();
-            chart.AppendLine($"20-min power: {power20min}W → Estimated FTP: {estimatedFtp}W");
+            content.AppendLine();
+            content.AppendLine($"[cyan]20-min power: {power20min}W[/]");
+            content.AppendLine($"[bold cyan]Estimated FTP: {estimatedFtp}W[/]");
+
             if (ftp.HasValue)
             {
                 var diff = estimatedFtp - ftp.Value;
+                var diffColor = diff > 0 ? "green" : diff < 0 ? "red" : "grey";
                 var sign = diff >= 0 ? "+" : "";
-                chart.AppendLine($"Current FTP: {ftp}W ({sign}{diff}W difference)");
+                content.AppendLine($"Current FTP: {ftp}W ([{diffColor}]{sign}{diff}W[/])");
             }
         }
 
-        return chart.ToString();
+        return content.ToString();
     }
 
     /// <summary>
@@ -126,37 +143,34 @@ public static class ChartService
         if (intervals == null || intervals.Count == 0)
             return string.Empty;
 
-        var chart = new System.Text.StringBuilder();
-        chart.AppendLine("\nDetected Intervals (Sustained threshold work)\n");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title("[bold]Detected Intervals[/] [dim](Sustained threshold work)[/]")
+            .AddColumn("Time")
+            .AddColumn("Duration")
+            .AddColumn("Avg Power")
+            .AddColumn("% FTP");
 
-        // Create timeline (60 chars = total duration)
-        var timeline = new char[60];
-        Array.Fill(timeline, '─');
-
-        foreach (var interval in intervals)
-        {
-            var startPos = (int)((interval.Start / (double)totalSeconds) * 60);
-            var endPos = (int)((interval.End / (double)totalSeconds) * 60);
-
-            for (int i = startPos; i < endPos && i < 60; i++)
-            {
-                timeline[i] = '█';
-            }
-        }
-
-        chart.AppendLine($"0:00 {new string(timeline)} {FormatTime(totalSeconds)}");
-        chart.AppendLine();
-
-        // List intervals
         foreach (var interval in intervals.OrderBy(i => i.Start))
         {
             var duration = interval.End - interval.Start;
-            var pctFtp = interval.FtpPercent.HasValue ? $" ({interval.FtpPercent:F0}% FTP)" : "";
-            chart.AppendLine($"• {FormatTime(interval.Start)} - {FormatTime(interval.End)}: " +
-                           $"{FormatTime(duration)} @ {interval.AveragePower:F0}W{pctFtp}");
+            var startTime = FormatTime(interval.Start);
+            var endTime = FormatTime(interval.End);
+            var durationStr = FormatTime(duration);
+
+            var ftpColor = interval.FtpPercent >= 105 ? "red" :
+                          interval.FtpPercent >= 95 ? "orange1" :
+                          interval.FtpPercent >= 85 ? "yellow" : "green";
+
+            table.AddRow(
+                $"{startTime} - {endTime}",
+                durationStr,
+                $"[cyan]{interval.AveragePower:F0}W[/]",
+                interval.FtpPercent.HasValue ? $"[{ftpColor}]{interval.FtpPercent:F0}%[/]" : "N/A"
+            );
         }
 
-        return chart.ToString();
+        return RenderToString(table);
     }
 
     /// <summary>
@@ -164,48 +178,42 @@ public static class ChartService
     /// </summary>
     public static string GenerateDecouplingChart(double firstHalfRatio, double secondHalfRatio, double decouplingPercent)
     {
-        var chart = new System.Text.StringBuilder();
-        chart.AppendLine("\nAerobic Decoupling Analysis\n");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title("[bold]Aerobic Decoupling Analysis[/]")
+            .AddColumn("Metric")
+            .AddColumn(new TableColumn("Value").RightAligned());
 
-        // Determine rating
+        table.AddRow("First Half", $"[cyan]{firstHalfRatio:F2} W/bpm[/]");
+        table.AddRow("Second Half", $"[cyan]{secondHalfRatio:F2} W/bpm[/]");
+
+        var decouplingColor = Math.Abs(decouplingPercent) < 5 ? "green" :
+                             Math.Abs(decouplingPercent) < 10 ? "yellow" : "red";
+        table.AddRow("Decoupling", $"[{decouplingColor}]{decouplingPercent:F1}%[/]");
+
         string rating;
-        string indicator;
+        string message;
         if (Math.Abs(decouplingPercent) < 5)
         {
-            rating = "Excellent";
-            indicator = "✓";
+            rating = "[green]Excellent ✓[/]";
+            message = "Strong aerobic fitness - minimal cardiac drift";
         }
         else if (Math.Abs(decouplingPercent) < 10)
         {
-            rating = "Acceptable";
-            indicator = "○";
+            rating = "[yellow]Good ○[/]";
+            message = "Solid aerobic base - some cardiac drift under load";
         }
         else
         {
-            rating = "Needs work";
-            indicator = "⚠";
+            rating = "[red]Needs Work ⚠[/]";
+            message = "Focus on Z2 endurance work to improve aerobic efficiency";
         }
 
-        chart.AppendLine($"First Half:   {firstHalfRatio:F2} W/bpm");
-        chart.AppendLine($"Second Half:  {secondHalfRatio:F2} W/bpm");
-        chart.AppendLine($"Decoupling:   {decouplingPercent:F1}%");
-        chart.AppendLine();
-        chart.AppendLine($"Rating: {rating} {indicator}");
+        table.AddEmptyRow();
+        table.AddRow("[bold]Rating[/]", rating);
+        table.AddRow("[dim]Assessment[/]", $"[dim]{message}[/]");
 
-        if (Math.Abs(decouplingPercent) < 5)
-        {
-            chart.AppendLine("Strong aerobic fitness - minimal cardiac drift");
-        }
-        else if (Math.Abs(decouplingPercent) < 10)
-        {
-            chart.AppendLine("Good aerobic base - some cardiac drift under load");
-        }
-        else
-        {
-            chart.AppendLine("Focus on Z2 endurance work to improve aerobic efficiency");
-        }
-
-        return chart.ToString();
+        return RenderToString(table);
     }
 
     /// <summary>
@@ -213,8 +221,6 @@ public static class ChartService
     /// </summary>
     public static string GenerateRideSummary(ApiActivity activity, int? ftp)
     {
-        var chart = new System.Text.StringBuilder();
-
         var duration = FormatTime(activity.MovingTime ?? 0);
         var distance = activity.Distance.HasValue ? $"{(activity.Distance / 1000):F1}km" : "N/A";
         var avgPower = activity.GetAveragePower();
@@ -224,43 +230,68 @@ public static class ChartService
         var maxHr = activity.MaxHr;
         var ef = activity.GetEfficiencyFactor();
 
-        // Truncate long activity names to fit
         var name = activity.Name ?? "Activity";
-        if (name.Length > 35)
-            name = name.Substring(0, 32) + "...";
+        if (name.Length > 45)
+            name = name.Substring(0, 42) + "...";
 
-        chart.AppendLine("┌─────────────────────────────────────────────────────┐");
-        chart.AppendLine($"│ {name,-38} {duration,8} {distance,6} │");
-        chart.AppendLine("├─────────────────────────────────────────────────────┤");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title($"[bold cyan]{name}[/]")
+            .AddColumn(new TableColumn("Metric").Width(15))
+            .AddColumn(new TableColumn("Value").Width(20))
+            .AddColumn(new TableColumn("Metric").Width(15))
+            .AddColumn(new TableColumn("Value").Width(20));
+
+        table.AddRow(
+            "[dim]Duration[/]", $"[cyan]{duration}[/]",
+            "[dim]Distance[/]", $"[cyan]{distance}[/]"
+        );
 
         if (avgPower.HasValue && np.HasValue)
         {
-            var viStr = vi.HasValue ? $"VI: {vi:F2}" : "";
-            var ifStr = ftp.HasValue && np.HasValue ? $"IF: {(np / ftp):F2}" : "";
-            chart.AppendLine($"│ Power   Avg: {avgPower:F0}W │ NP: {np:F0}W │ {viStr,-9} {ifStr,-9} │");
+            var viStr = vi.HasValue ? $"{vi:F2}" : "N/A";
+            var ifStr = ftp.HasValue && np.HasValue ? $"{(np / ftp):F2}" : "N/A";
+
+            table.AddRow(
+                "[dim]Avg Power[/]", $"[yellow]{avgPower:F0}W[/]",
+                "[dim]NP[/]", $"[yellow]{np:F0}W[/]"
+            );
+            table.AddRow(
+                "[dim]VI[/]", $"[cyan]{viStr}[/]",
+                "[dim]IF[/]", $"[orange1]{ifStr}[/]"
+            );
         }
 
         if (avgHr.HasValue)
         {
-            var efStr = ef.HasValue ? $"EF: {ef:F2}" : "";
-            chart.AppendLine($"│ HR      Avg: {avgHr,3} │ Max: {maxHr,3}    │ {efStr,-22} │");
+            var efStr = ef.HasValue ? $"{ef:F2}" : "N/A";
+            table.AddRow(
+                "[dim]Avg HR[/]", $"[red]{avgHr} bpm[/]",
+                "[dim]Max HR[/]", $"[red]{maxHr} bpm[/]"
+            );
+            table.AddRow(
+                "[dim]Efficiency[/]", $"[green]{efStr}[/]",
+                "", ""
+            );
         }
-
-        // Always show at least basic info if no power/HR
-        if (!avgPower.HasValue && !avgHr.HasValue)
+        else if (!avgPower.HasValue)
         {
+            // Show basic info if no power/HR
             var tss = activity.GetTrainingLoad();
             var cadence = activity.AverageCadence ?? activity.AvgCadence;
 
-            var tssStr = tss.HasValue ? $"TSS: {tss:F0}" : "";
-            var cadenceStr = cadence.HasValue ? $"Cadence: {cadence:F0} rpm" : "";
-
-            chart.AppendLine($"│ {tssStr,-25} {cadenceStr,-27} │");
+            if (tss.HasValue || cadence.HasValue)
+            {
+                table.AddRow(
+                    tss.HasValue ? "[dim]TSS[/]" : "",
+                    tss.HasValue ? $"[yellow]{tss:F0}[/]" : "",
+                    cadence.HasValue ? "[dim]Cadence[/]" : "",
+                    cadence.HasValue ? $"[cyan]{cadence:F0} rpm[/]" : ""
+                );
+            }
         }
 
-        chart.AppendLine("└─────────────────────────────────────────────────────┘");
-
-        return chart.ToString();
+        return RenderToString(table);
     }
 
     private static string FormatTime(int seconds)
@@ -276,11 +307,16 @@ public static class ChartService
     /// </summary>
     public static string GeneratePowerZones(int ftp, int[] zones)
     {
-        var chart = new System.Text.StringBuilder();
-        chart.AppendLine("\nPower Zones (based on FTP)\n");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title($"[bold]Power Zones[/] [dim](FTP: {ftp}W)[/]")
+            .AddColumn(new TableColumn("Zone").Centered())
+            .AddColumn(new TableColumn("Name").LeftAligned())
+            .AddColumn(new TableColumn("% FTP").Centered())
+            .AddColumn(new TableColumn("Watts").RightAligned());
 
-        var zoneNames = new[] { "Z1 Recovery", "Z2 Endurance", "Z3 Tempo", "Z4 Threshold", "Z5 VO2max", "Z6 Anaerobic", "Z7 Neuromuscular" };
-        var zoneColors = new[] { "░", "▒", "▓", "█", "█", "█", "█" };
+        var zoneNames = new[] { "Recovery", "Endurance", "Tempo", "Threshold", "VO2max", "Anaerobic", "Neuromuscular" };
+        var zoneColors = new[] { "grey", "blue", "green", "yellow", "orange1", "red", "red" };
 
         for (int i = 0; i < Math.Min(zones.Length - 1, zoneNames.Length); i++)
         {
@@ -289,13 +325,18 @@ public static class ChartService
             var lowerWatts = (int)(ftp * lowerPercent / 100.0);
             var upperWatts = i < zones.Length - 2 ? (int)(ftp * upperPercent / 100.0) : 999;
 
-            var bar = new string(zoneColors[i][0], 10);
             var range = upperWatts < 999 ? $"{lowerWatts}-{upperWatts}W" : $"{lowerWatts}W+";
+            var color = i < zoneColors.Length ? zoneColors[i] : "white";
 
-            chart.AppendLine($"{zoneNames[i],-18} {bar}  {lowerPercent,3}%-{upperPercent,3}%  │ {range}");
+            table.AddRow(
+                $"[bold {color}]Z{i + 1}[/]",
+                $"[{color}]{zoneNames[i]}[/]",
+                $"[dim]{lowerPercent}-{upperPercent}%[/]",
+                $"[{color}]{range}[/]"
+            );
         }
 
-        return chart.ToString();
+        return RenderToString(table);
     }
 
     /// <summary>
@@ -303,30 +344,30 @@ public static class ChartService
     /// </summary>
     public static string GenerateHrZones(int[] zones, int maxHr)
     {
-        var chart = new System.Text.StringBuilder();
-        chart.AppendLine("\nHeart Rate Zones\n");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title($"[bold]Heart Rate Zones[/] [dim](Max HR: {maxHr} bpm)[/]")
+            .AddColumn(new TableColumn("Zone").Centered())
+            .AddColumn(new TableColumn("Name").LeftAligned())
+            .AddColumn(new TableColumn("BPM Range").RightAligned());
 
-        var zoneNames = new[] { "Z1 Recovery", "Z2 Aerobic", "Z3 Tempo", "Z4 Threshold", "Z5 Max" };
-        var zoneColors = new[] { "░", "▒", "▓", "█", "█" };
+        var zoneNames = new[] { "Recovery", "Aerobic", "Tempo", "Threshold", "Max" };
+        var zoneColors = new[] { "grey", "blue", "green", "yellow", "red" };
 
         for (int i = 0; i < Math.Min(zones.Length, zoneNames.Length); i++)
         {
             var lowerBpm = i == 0 ? 0 : zones[i - 1];
             var upperBpm = zones[i];
+            var color = i < zoneColors.Length ? zoneColors[i] : "white";
 
-            var bar = new string(zoneColors[i][0], 10);
-            var range = $"{lowerBpm}-{upperBpm} bpm";
-
-            chart.AppendLine($"{zoneNames[i],-18} {bar}  │ {range}");
+            table.AddRow(
+                $"[bold {color}]Z{i + 1}[/]",
+                $"[{color}]{zoneNames[i]}[/]",
+                $"[{color}]{lowerBpm}-{upperBpm} bpm[/]"
+            );
         }
 
-        // Add max HR zone
-        if (zones.Length >= 5)
-        {
-            chart.AppendLine($"{"Max HR",-18} {"█",-10}  │ {zones[4]}+ bpm ({maxHr} max)");
-        }
-
-        return chart.ToString();
+        return RenderToString(table);
     }
 
     /// <summary>
@@ -337,15 +378,10 @@ public static class ChartService
         if (data == null || data.Count == 0)
             return string.Empty;
 
-        // Take last N days
         var recentData = data.TakeLast(days).ToList();
         if (recentData.Count == 0)
             return string.Empty;
 
-        var chart = new System.Text.StringBuilder();
-        chart.AppendLine($"\nFitness Trend (Last {recentData.Count} Days)\n");
-
-        // Get current values
         var latest = recentData.Last();
         var oldest = recentData.First();
         var ctlChange = latest.Ctl - oldest.Ctl;
@@ -353,58 +389,73 @@ public static class ChartService
 
         // Determine form zone
         string formZone;
-        string formIndicator;
+        string formColor;
         if (tsbCurrent >= 15)
         {
             formZone = "Fresh/Racing";
-            formIndicator = "🟢";
+            formColor = "green";
         }
         else if (tsbCurrent >= -10)
         {
             formZone = "Transitional";
-            formIndicator = "🟡";
+            formColor = "yellow";
         }
         else if (tsbCurrent >= -30)
         {
             formZone = "Optimal Training";
-            formIndicator = "🔵";
+            formColor = "blue";
         }
         else if (tsbCurrent >= -50)
         {
             formZone = "Overreaching";
-            formIndicator = "🟠";
+            formColor = "orange1";
         }
         else
         {
             formZone = "High Risk";
-            formIndicator = "🔴";
+            formColor = "red";
         }
 
-        chart.AppendLine($"CTL (Fitness):  {latest.Ctl:F1} ({(ctlChange >= 0 ? "+" : "")}{ctlChange:F1} from {recentData.Count} days ago)");
-        chart.AppendLine($"ATL (Fatigue):  {latest.Atl:F1}");
-        chart.AppendLine($"TSB (Form):     {tsbCurrent:F1} {formIndicator} {formZone}");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title($"[bold]Fitness Trend[/] [dim](Last {recentData.Count} Days)[/]")
+            .AddColumn(new TableColumn("Metric").Width(20))
+            .AddColumn(new TableColumn("Value").Width(30));
+
+        var ctlColor = ctlChange >= 0 ? "green" : "red";
+        var ctlSign = ctlChange >= 0 ? "+" : "";
+
+        table.AddRow(
+            "[cyan]CTL (Fitness)[/]",
+            $"[bold]{latest.Ctl:F1}[/] ([{ctlColor}]{ctlSign}{ctlChange:F1}[/])"
+        );
+        table.AddRow(
+            "[yellow]ATL (Fatigue)[/]",
+            $"[bold]{latest.Atl:F1}[/]"
+        );
+        table.AddRow(
+            "[bold]TSB (Form)[/]",
+            $"[{formColor}]{tsbCurrent:F1}[/] [dim]({formZone})[/]"
+        );
 
         if (latest.RampRate != null)
         {
-            var rampStr = latest.RampRate.Value.ToString("F1");
-            var rampIndicator = latest.RampRate.Value > 8 ? "⚠️" : latest.RampRate.Value > 5 ? "✓" : "↓";
-            chart.AppendLine($"Ramp Rate:      {rampStr} TSS/week {rampIndicator}");
+            var rampColor = latest.RampRate.Value > 8 ? "red" :
+                           latest.RampRate.Value > 5 ? "green" : "yellow";
+            var rampWarning = latest.RampRate.Value > 8 ? " ⚠️" : "";
+
+            table.AddRow(
+                "[dim]Ramp Rate[/]",
+                $"[{rampColor}]{latest.RampRate:F1} TSS/week{rampWarning}[/]"
+            );
         }
 
-        // Generate sparkline for CTL
-        chart.AppendLine();
-        chart.AppendLine("CTL Progression:");
-        chart.Append("  ");
-        var sparkline = GenerateSparkline(recentData.Select(d => d.Ctl).ToList(), 50);
-        chart.AppendLine(sparkline);
+        // Add sparkline
+        var sparkline = GenerateSparkline(recentData.Select(d => d.Ctl).ToList(), 40);
+        table.AddEmptyRow();
+        table.AddRow("[dim]CTL Progression[/]", $"[cyan]{sparkline}[/]");
 
-        // TSB bar
-        chart.AppendLine();
-        chart.AppendLine("Form Zone:");
-        var tsbBar = GenerateTsbBar(tsbCurrent);
-        chart.AppendLine(tsbBar);
-
-        return chart.ToString();
+        return RenderToString(table);
     }
 
     private static string GenerateSparkline(List<double> values, int width)
@@ -421,7 +472,6 @@ public static class ChartService
         var sparkChars = new[] { '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█' };
         var result = new System.Text.StringBuilder();
 
-        // Sample values to fit width
         var step = Math.Max(1, values.Count / width);
         for (int i = 0; i < values.Count; i += step)
         {
@@ -432,52 +482,6 @@ public static class ChartService
         }
 
         return result.ToString();
-    }
-
-    private static string GenerateTsbBar(double tsb)
-    {
-        var chart = new System.Text.StringBuilder();
-
-        // Bar ranges: -50 to +25
-        var barWidth = 60;
-        var zeroPosition = 40; // Position of zero on the bar (at -50 is 0, +25 is 60)
-
-        // Calculate position (-50 to +25 range)
-        var position = (int)((tsb + 50) / 75.0 * barWidth);
-        position = Math.Max(0, Math.Min(barWidth - 1, position));
-
-        // Build bar with zones
-        var bar = new char[barWidth];
-        for (int i = 0; i < barWidth; i++)
-        {
-            if (i < zeroPosition)
-            {
-                // Negative TSB (left of zero)
-                if (i < 20)
-                    bar[i] = '█'; // High risk zone (< -30)
-                else if (i < zeroPosition)
-                    bar[i] = '▓'; // Optimal training (-30 to -10)
-            }
-            else
-            {
-                // Positive TSB (right of zero)
-                if (i < zeroPosition + 8)
-                    bar[i] = '▒'; // Transitional (-10 to +10)
-                else
-                    bar[i] = '░'; // Fresh/racing (>+10)
-            }
-        }
-
-        // Place indicator
-        bar[position] = '▼';
-
-        chart.Append("  ");
-        chart.Append(new string(bar));
-        chart.AppendLine();
-        chart.AppendLine("  -50        -30      -10   0   +10      +25");
-        chart.AppendLine("  High Risk  Optimal  Trans Fresh/Race");
-
-        return chart.ToString();
     }
 }
 
