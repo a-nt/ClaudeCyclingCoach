@@ -94,7 +94,9 @@ dotnet publish -c Release -r osx-arm64 --self-contained false \
 ## Code Style
 
 - **C#:** Follow standard C# conventions (.NET coding standards)
-- **Dependencies:** Minimal - only System.CommandLine for CLI parsing
+- **Dependencies:** Minimal - Spectre.Console for UI, System.CommandLine for CLI
+- **Charts:** Use Spectre.Console tables/panels for consistent formatting
+- **Colors:** Follow zone color scheme (grey→blue→green→yellow→orange→red)
 - **Formatting:** 4-space indentation, follow .editorconfig if present
 - **Comments:** Explain why, not what (code should be self-documenting)
 - **Error handling:** Return structured JSON with clear error messages

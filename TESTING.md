@@ -454,12 +454,14 @@ Test with a new intervals.icu account with no activities.
 - [ ] Follow-up questions work without re-fetching
 - [ ] Error messages are clear and actionable
 - [ ] Output formatting is consistent and professional
+- [ ] Charts include ANSI color codes (zone colors, metric colors)
+- [ ] Tables use Spectre.Console rounded borders (╭╮╰╯)
 - [ ] Context is maintained across conversation
 - [ ] Config file permissions set correctly (600)
 - [ ] Skill works for any intervals.icu user
 - [ ] README provides complete setup instructions
 - [ ] Build system works (dotnet build/publish)
-- [ ] .NET 10 runtime dependency is documented
+- [ ] .NET 10 runtime and Spectre.Console dependencies documented
 
 ## Known Limitations
 

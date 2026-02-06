@@ -19,7 +19,7 @@ Transform your training data into actionable coaching insights with power/heart 
 - 👤 **Profile Management** - View your FTP, zones, and key metrics at a glance
 - 💬 **Conversational Coaching** - Ask follow-up questions and get personalized advice
 - 🔒 **Privacy First** - Your data stays on your machine, no cloud processing
-- 🚀 **Minimal Dependencies** - Built with .NET 10, only System.CommandLine dependency
+- 🚀 **Minimal Dependencies** - Built with .NET 10, Spectre.Console for UI, System.CommandLine for CLI
 - ⚡ **Type-Safe** - C# implementation with strict models for reliable API parsing
 
 ## 🎯 Quick Start
@@ -187,6 +187,12 @@ cycling-coach/                  # Root IS the skill (symlink to ~/.claude/skills
 - ✅ Maintainable architecture
 - ✅ ~250ms startup (acceptable for API-bound operations)
 
+**UI Library:**
+- 🎨 **Spectre.Console** for professional terminal output
+- ✅ Automatic table formatting and alignment
+- ✅ ANSI color support embedded in JSON output
+- ✅ Color-coded power zones (grey→blue→green→yellow→orange→red)
+
 **Deployment:** Root directory is symlinked to `~/.claude/skills/coach/`
 
 ## 🔒 Privacy & Security
@@ -199,12 +205,16 @@ cycling-coach/                  # Root IS the skill (symlink to ~/.claude/skills
 
 ## 📖 Understanding the Metrics
 
-### Power Zones (based on FTP)
-- **Z1 (<55%)** - Recovery
-- **Z2 (55-75%)** - Endurance base (most time here for Polarized training)
-- **Z3 (75-90%)** - Tempo ("no man's land" - avoid excessive time here)
-- **Z4 (90-105%)** - Threshold
-- **Z5 (>105%)** - VO2 max
+### Power Zones (based on FTP) - Color Coded! 🎨
+- **Z1 (<55%)** - 🔘 Grey - Recovery
+- **Z2 (55-75%)** - 🔵 Blue - Endurance base (most time here for Polarized training)
+- **Z3 (75-90%)** - 🟢 Green - Tempo ("no man's land" - avoid excessive time here)
+- **Z4 (90-105%)** - 🟡 Yellow - Threshold
+- **Z5 (105-120%)** - 🟠 Orange - VO2 max
+- **Z6 (120-150%)** - 🔴 Red - Anaerobic
+- **Z7 (>150%)** - 🔴 Red - Neuromuscular
+
+All charts include ANSI color codes for terminal display!
 
 ### Training Load (Research-Based Interpretation)
 - **CTL** - Your fitness level (40-60 recreational, 80-100 competitive, 120+ elite)
@@ -319,6 +329,7 @@ Built with:
 - [Claude Code](https://claude.ai/code) by Anthropic
 - [intervals.icu](https://intervals.icu) by David Tinker
 - [.NET 10](https://dotnet.microsoft.com/) by Microsoft
+- [Spectre.Console](https://spectreconsole.net/) for terminal UI and colored output
 - [System.CommandLine](https://github.com/dotnet/command-line-api) for CLI parsing
 
 ## 📄 License
