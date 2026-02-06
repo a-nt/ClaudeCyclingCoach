@@ -12,7 +12,7 @@
    ```bash
    dotnet --version
    ```
-   Should show .NET 9.0 or later
+   Should show .NET 10.0 or later
 
 3. **Check binary exists:**
    ```bash
@@ -437,7 +437,7 @@ Test with a new intervals.icu account with no activities.
 - Skill works with any intervals.icu account
 - No hardcoded athlete-specific data
 - README instructions are complete and accurate
-- .NET 9 runtime is available
+- .NET 10 runtime is available
 
 ## Success Criteria Checklist
 
@@ -459,7 +459,7 @@ Test with a new intervals.icu account with no activities.
 - [ ] Skill works for any intervals.icu user
 - [ ] README provides complete setup instructions
 - [ ] Build system works (dotnet build/publish)
-- [ ] .NET 9 runtime dependency is documented
+- [ ] .NET 10 runtime dependency is documented
 
 ## Known Limitations
 
@@ -467,7 +467,7 @@ Test with a new intervals.icu account with no activities.
 2. **Data availability:** Some metrics require power meter and heart rate monitor
 3. **Activity types:** Analysis optimized for cycling rides with power data
 4. **Strava sync:** Activities synced through Strava lack detailed power/HR streams
-5. **.NET required:** Skill requires .NET 9 runtime installed
+5. **.NET required:** Skill requires .NET 10 runtime installed
 6. **Startup time:** ~250ms CLI startup (acceptable for API-bound operations)
 
 ## Debugging
@@ -510,7 +510,7 @@ ls -l ~/.claude/skills/coach/.config.json
 ### Common Issues
 
 **"dotnet: command not found"**
-- Install .NET 9 Runtime: https://dotnet.microsoft.com/download
+- Install .NET 10 Runtime: https://dotnet.microsoft.com/download
 - Verify: `dotnet --version`
 
 **"Could not find CoachCli.dll"**

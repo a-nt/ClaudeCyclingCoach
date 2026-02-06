@@ -1239,7 +1239,7 @@ No hardcoded credentials or athlete-specific data in skill files.
 
 ## Technical Requirements
 
-- **.NET 9 Runtime:** Required for CLI binary execution
+- **.NET 10 Runtime:** Required for CLI binary execution
 - **Minimal dependencies:** Only System.CommandLine for CLI parsing
 - **Cross-platform:** Works on macOS, Linux, Windows (with appropriate runtime)
 - **Type-safe:** C# implementation with strict API models

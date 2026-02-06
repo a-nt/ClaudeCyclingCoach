@@ -1,12 +1,12 @@
 {
   "runtimeTarget": {
-    "name": ".NETCoreApp,Version=v9.0/osx-arm64",
+    "name": ".NETCoreApp,Version=v10.0/osx-arm64",
     "signature": ""
   },
   "compilationOptions": {},
   "targets": {
-    ".NETCoreApp,Version=v9.0": {},
-    ".NETCoreApp,Version=v9.0/osx-arm64": {
+    ".NETCoreApp,Version=v10.0": {},
+    ".NETCoreApp,Version=v10.0/osx-arm64": {
       "CoachCli/1.0.0": {
         "dependencies": {
           "System.CommandLine": "2.0.2"

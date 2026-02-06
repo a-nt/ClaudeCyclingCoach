@@ -5,7 +5,7 @@
 Transform your training data into actionable coaching insights with power/heart rate analysis, fitness trends, and personalized recommendations.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET 9](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
+[![.NET 10](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
 [![intervals.icu](https://img.shields.io/badge/intervals.icu-integrated-blue.svg)](https://intervals.icu)
 
 ## ✨ Features
@@ -19,14 +19,14 @@ Transform your training data into actionable coaching insights with power/heart 
 - 👤 **Profile Management** - View your FTP, zones, and key metrics at a glance
 - 💬 **Conversational Coaching** - Ask follow-up questions and get personalized advice
 - 🔒 **Privacy First** - Your data stays on your machine, no cloud processing
-- 🚀 **Minimal Dependencies** - Built with .NET 9, only System.CommandLine dependency
+- 🚀 **Minimal Dependencies** - Built with .NET 10, only System.CommandLine dependency
 - ⚡ **Type-Safe** - C# implementation with strict models for reliable API parsing
 
 ## 🎯 Quick Start
 
 ### Prerequisites
 
-- [.NET 9 Runtime](https://dotnet.microsoft.com/download) installed
+- [.NET 10 Runtime](https://dotnet.microsoft.com/download) installed
 - [Claude Code](https://claude.ai/download) CLI tool
 - [intervals.icu](https://intervals.icu) account with API access
 
@@ -155,7 +155,7 @@ and this wasn't a maximal test, you're likely ready. Test when fresh - TSB aroun
 
 ## 🏗️ Architecture
 
-**Implementation: C# .NET 9** ✅
+**Implementation: C# .NET 10** ✅
 
 ```
 cycling-coach/                  # Root IS the skill (symlink to ~/.claude/skills/coach)
@@ -304,7 +304,7 @@ export INTERVALS_ICU_ATHLETE_ID="i12345"
 Built with:
 - [Claude Code](https://claude.ai/code) by Anthropic
 - [intervals.icu](https://intervals.icu) by David Tinker
-- [.NET 9](https://dotnet.microsoft.com/) by Microsoft
+- [.NET 10](https://dotnet.microsoft.com/) by Microsoft
 - [System.CommandLine](https://github.com/dotnet/command-line-api) for CLI parsing
 
 ## 📄 License
