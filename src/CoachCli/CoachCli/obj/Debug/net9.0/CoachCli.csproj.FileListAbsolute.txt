@@ -1,6 +1,0 @@
-/Users/anders/Programming/Node/ClaudeCyclingCoach/CoachCli/CoachCli/obj/Debug/net9.0/CoachCli.csproj.AssemblyReference.cache
-/Users/anders/Programming/Node/ClaudeCyclingCoach/CoachCli/CoachCli/obj/Debug/net9.0/CoachCli.GeneratedMSBuildEditorConfig.editorconfig
-/Users/anders/Programming/Node/ClaudeCyclingCoach/CoachCli/CoachCli/obj/Debug/net9.0/CoachCli.AssemblyInfoInputs.cache
-/Users/anders/Programming/Node/ClaudeCyclingCoach/CoachCli/CoachCli/obj/Debug/net9.0/CoachCli.AssemblyInfo.cs
-/Users/anders/Programming/Node/ClaudeCyclingCoach/CoachCli/CoachCli/obj/Debug/net9.0/CoachCli.csproj.CoreCompileInputs.cache
-/Users/anders/Programming/Node/ClaudeCyclingCoach/CoachCli/CoachCli/obj/Debug/net9.0/CoachCli.sourcelink.json

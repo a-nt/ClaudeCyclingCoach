@@ -16,3 +16,11 @@ skill-source/.config.json
 # Temporary files
 *.tmp
 *.swp
+
+# C# / .NET
+src/**/bin/
+src/**/obj/
+*.user
+.vs/
+*.suo
+*.userprefs
