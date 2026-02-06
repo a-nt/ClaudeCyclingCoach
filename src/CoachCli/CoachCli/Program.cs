@@ -179,7 +179,8 @@ static async Task HandleActivity(IntervalsApiClient client, string id)
             hrCurve = activity.HrCurve,
             streams = activity.Streams,
             intervals = activity.Intervals,
-            icu_zone_times = activity.IcuZoneTimes
+            icu_zone_times = activity.IcuZoneTimes,
+            icu_hr_zone_times = activity.IcuHrZoneTimes
         }
     };
 

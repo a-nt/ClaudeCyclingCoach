@@ -160,6 +160,9 @@ public class ApiActivity
     [JsonPropertyName("icu_zone_times")]
     public JsonElement? IcuZoneTimes { get; set; }
 
+    [JsonPropertyName("icu_hr_zone_times")]
+    public JsonElement? IcuHrZoneTimes { get; set; }
+
     [JsonPropertyName("efficiency")]
     public double? Efficiency { get; set; }
 

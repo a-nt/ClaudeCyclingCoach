@@ -304,6 +304,27 @@ public static class AnalysisService
             }
         }
 
+        // HR zone distribution chart
+        if (activity.IcuHrZoneTimes.HasValue)
+        {
+            try
+            {
+                var hrZoneTimes = ParseZoneTimes(activity.IcuHrZoneTimes.Value);
+                var totalSeconds = activity.MovingTime ?? activity.ElapsedTime ?? 0;
+                var hrZoneNames = new[] { "Z1 Recovery", "Z2 Aerobic", "Z3 Tempo", "Z4 Threshold", "Z5 VO2max" };
+
+                if (hrZoneTimes.Count > 0 && totalSeconds > 0)
+                {
+                    charts["hrZoneDistribution"] = ChartService.GenerateHrZoneDistributionChart(hrZoneTimes, totalSeconds, hrZoneNames);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log HR zone parsing errors for debugging
+                Console.Error.WriteLine($"HR zone chart error: {ex.Message}");
+            }
+        }
+
         // Decoupling chart
         if (result.Decoupling != null)
         {

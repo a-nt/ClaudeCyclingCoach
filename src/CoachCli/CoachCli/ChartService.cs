@@ -74,6 +74,50 @@ public static class ChartService
     }
 
     /// <summary>
+    /// Generate a horizontal bar chart for HR zone distribution
+    /// </summary>
+    public static string GenerateHrZoneDistributionChart(Dictionary<int, double> zoneTimes, int totalSeconds, string[] zoneNames)
+    {
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title("[bold]Time in Heart Rate Zones[/]")
+            .AddColumn(new TableColumn("Zone").LeftAligned())
+            .AddColumn(new TableColumn("Distribution").Centered())
+            .AddColumn(new TableColumn("% Time").RightAligned())
+            .AddColumn(new TableColumn("Minutes").RightAligned());
+
+        // HR zones typically use: grey, blue, green, yellow, red
+        var zoneColors = new[] { "grey", "blue", "green", "yellow", "red" };
+
+        for (int zone = 1; zone <= 5; zone++)
+        {
+            if (!zoneTimes.ContainsKey(zone)) continue;
+
+            var seconds = zoneTimes[zone];
+            var percentage = (seconds / totalSeconds) * 100;
+            var minutes = (int)(seconds / 60);
+
+            var barLength = (int)(percentage / 5); // 20 chars = 100%
+            var filledBar = new string('█', Math.Min(barLength, 20));
+            var emptyBar = new string('░', Math.Max(20 - barLength, 0));
+
+            var zoneName = zone <= zoneNames.Length ? zoneNames[zone - 1] : $"Z{zone}";
+            var color = zone <= zoneColors.Length ? zoneColors[zone - 1] : "white";
+
+            var coloredBar = $"[{color}]{filledBar}[/]{emptyBar}";
+
+            table.AddRow(
+                $"[{color}]{zoneName}[/]",
+                coloredBar,
+                $"{percentage:F0}%",
+                $"{minutes}min"
+            );
+        }
+
+        return RenderToString(table);
+    }
+
+    /// <summary>
     /// Generate a simple power curve chart
     /// </summary>
     public static string GeneratePowerCurveChart(Dictionary<string, int> powerCurve, int? ftp)
