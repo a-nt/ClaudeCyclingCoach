@@ -754,21 +754,26 @@ When user runs `/coach analyze [activity-id]`:
    - Runs all analysis calculations
    - Returns comprehensive analysis results with embedded ASCII charts
 
-4. **Display ASCII charts:**
-   The analyze command returns a `charts` object containing ANSI-formatted visualizations:
-   - `rideSummary`: Formatted ride metrics in a table
-   - `zoneDistribution`: Color-coded power zone distribution bar chart
-   - `hrZoneDistribution`: Color-coded HR zone distribution bar chart (if HR data available)
-   - `powerCurve`: Power curve analysis (if available)
-   - `decoupling`: First/second half comparison chart (if applicable)
-   - `intervals`: Detected interval timeline (if detected)
+4. **Display ALL ASCII charts from the response:**
 
-   **CRITICAL:** Output these charts directly without modification. The strings contain ANSI escape codes for colors and formatting. Simply display them as-is:
-   ```
-   console.log(charts.rideSummary)
-   console.log(charts.zoneDistribution)
-   console.log(charts.hrZoneDistribution)
-   ```
+   **CRITICAL REQUIREMENT:** The analyze command returns a `charts` object. You MUST display ALL charts that are present in the response.
+
+   Available chart types:
+   - `rideSummary`: Always present - formatted ride metrics in a table
+   - `zoneDistribution`: Always present - color-coded power zone distribution bar chart
+   - `hrZoneDistribution`: Present when HR data available - color-coded HR zone distribution bar chart
+   - `powerCurve`: Present when power curve data available
+   - `decoupling`: Present when ride is long enough for decoupling analysis
+   - `intervals`: Present when intervals are detected
+
+   **Display process:**
+   1. Check which charts exist in `data.Charts` object
+   2. Output EACH chart string directly without any modification
+   3. The strings already contain ANSI escape codes for colors and box-drawing characters
+   4. Do NOT skip charts - if `hrZoneDistribution` exists, display it
+   5. Display charts in this order: rideSummary, zoneDistribution, hrZoneDistribution, powerCurve, decoupling, intervals
+
+   **Example:** If the response contains rideSummary, zoneDistribution, and hrZoneDistribution, you must display all three.
 
 5. **Interpret results:**
    - Reference examples/activity-analysis.md for formatting
@@ -776,7 +781,8 @@ When user runs `/coach analyze [activity-id]`:
      - Overview metrics (TSS, IF, NP)
      - **VI (Variability Index):** Pacing consistency assessment
      - **EF (Efficiency Factor):** Aerobic efficiency (compare to previous similar workouts if available)
-     - Zone distribution interpretation
+     - **Power zone distribution:** Interpret time spent in each power zone
+     - **HR zone distribution:** If displayed, comment on time in HR zones and alignment with power zones
      - Aerobic decoupling analysis
      - Sustained intervals detected
      - Power/HR coupling assessment
@@ -1073,10 +1079,23 @@ Example: "How should I train next week?"
 
 **Activity Analysis Output** (`/coach analyze`)
 Reference examples/activity-analysis.md but keep it focused:
-1. Quick overview (duration, power, HR)
-2. Key finding (zone distribution OR decoupling OR intervals - not all three in detail)
-3. One coaching insight
-4. Ask a follow-up question
+1. **Display ALL charts** from the response (rideSummary, zoneDistribution, hrZoneDistribution if present, etc.)
+2. Quick overview text (duration, power, HR)
+3. Key finding interpreting BOTH power and HR zone distribution:
+   - Comment on power zone distribution (e.g., "95% Z2 - perfect endurance ride")
+   - If HR zones displayed, comment on alignment (e.g., "HR matched at 81% Z2 aerobic zone")
+   - Note if power/HR zones don't align (could indicate fatigue, heat, or data issues)
+4. One coaching insight
+5. Ask a follow-up question
+
+**Example good output:**
+[rideSummary chart displayed]
+[zoneDistribution chart displayed]
+[hrZoneDistribution chart displayed]
+
+"Perfect Z2 endurance session - 95% power in Z2, matching 81% HR in aerobic zone. The slight Z1 HR time (19%) at start is normal warm-up drift. This shows excellent aerobic control and proper zone alignment.
+
+What's tomorrow's plan - rest or another easy spin?"
 
 **Trends Report Output** (`/coach trends`)
 Reference examples/trend-report.md but streamline:
