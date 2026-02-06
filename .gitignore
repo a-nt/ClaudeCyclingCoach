@@ -24,3 +24,6 @@ src/**/obj/
 .vs/
 *.suo
 *.userprefs
+
+# Agents
+.claude
