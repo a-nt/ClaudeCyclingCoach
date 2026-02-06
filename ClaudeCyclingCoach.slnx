@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/CoachCli/">
+    <Project Path="src/CoachCli/CoachCli.Tests/CoachCli.Tests.csproj" />
+    <Project Path="src/CoachCli/CoachCli/CoachCli.csproj" />
+  </Folder>
+</Solution>

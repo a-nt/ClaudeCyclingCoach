@@ -240,7 +240,13 @@ dotnet publish -c Release -r osx-arm64 --self-contained false \
 ### Running Tests
 
 ```bash
-# Test CLI commands
+# Run unit tests (recommended after any code changes)
+./test.sh
+
+# Or use dotnet directly
+dotnet test
+
+# Test CLI commands manually
 dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll profile
 dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll activities --limit 5
 dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 30
@@ -250,6 +256,14 @@ dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 30
 
 # See TESTING.md for comprehensive test procedures
 ```
+
+**Test Coverage:**
+- ✅ Analysis calculations (decoupling, intervals, power/HR relationship)
+- ✅ Chart generation (all 5 chart types)
+- ✅ Configuration serialization
+- ✅ Edge cases and null handling
+
+Run `./test.sh` after making edits to verify everything still works.
 
 ### Contributing
 
