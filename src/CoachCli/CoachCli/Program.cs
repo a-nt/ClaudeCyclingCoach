@@ -86,6 +86,19 @@ static async Task HandleProfile(IntervalsApiClient client)
     var cyclingSetting = profile.SportSettings?
         .FirstOrDefault(s => s.Types?.Contains("Ride") == true || s.Types?.Contains("VirtualRide") == true);
 
+    // Generate charts
+    var charts = new Dictionary<string, string>();
+
+    if (cyclingSetting?.Ftp != null && cyclingSetting?.PowerZones != null)
+    {
+        charts["powerZones"] = ChartService.GeneratePowerZones(cyclingSetting.Ftp.Value, cyclingSetting.PowerZones);
+    }
+
+    if (cyclingSetting?.HrZones != null && cyclingSetting?.MaxHr != null)
+    {
+        charts["hrZones"] = ChartService.GenerateHrZones(cyclingSetting.HrZones, cyclingSetting.MaxHr.Value);
+    }
+
     var result = new
     {
         success = true,
@@ -103,7 +116,8 @@ static async Task HandleProfile(IntervalsApiClient client)
             hrZones = cyclingSetting?.HrZones,
             maxHr = cyclingSetting?.MaxHr,
             restingHr = cyclingSetting?.RestingHr,
-            lthr = cyclingSetting?.Lthr
+            lthr = cyclingSetting?.Lthr,
+            charts = charts.Count > 0 ? charts : null
         }
     };
 
@@ -176,20 +190,41 @@ static async Task HandleWellness(IntervalsApiClient client, int days)
 {
     var wellness = await client.GetWellnessAsync(days);
 
+    var wellnessData = wellness.Select(w => new
+    {
+        date = w.Id,
+        ctl = w.Ctl,
+        atl = w.Atl,
+        tsb = w.Ctl - w.Atl,
+        rampRate = w.RampRate,
+        weight = w.Weight,
+        restingHr = w.RestingHr,
+        hrvSdnn = w.HrvSdnn
+    }).ToList();
+
+    // Generate fitness trend chart
+    var dataPoints = wellness.Select(w => new WellnessDataPoint
+    {
+        Ctl = w.Ctl,
+        Atl = w.Atl,
+        Tsb = w.Ctl - w.Atl,
+        RampRate = w.RampRate
+    }).ToList();
+
+    var charts = new Dictionary<string, string>();
+    if (dataPoints.Count > 0)
+    {
+        charts["fitnessTrend"] = ChartService.GenerateFitnessTrend(dataPoints, Math.Min(30, days));
+    }
+
     var result = new
     {
         success = true,
-        data = wellness.Select(w => new
+        data = new
         {
-            date = w.Id,
-            ctl = w.Ctl,
-            atl = w.Atl,
-            tsb = w.Ctl - w.Atl,
-            rampRate = w.RampRate,
-            weight = w.Weight,
-            restingHr = w.RestingHr,
-            hrvSdnn = w.HrvSdnn
-        }).ToList()
+            wellness = wellnessData,
+            charts = charts.Count > 0 ? charts : null
+        }
     };
 
     Console.WriteLine(JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));

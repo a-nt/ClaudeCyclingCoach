@@ -1,5 +1,13 @@
 namespace CoachCli;
 
+public class WellnessDataPoint
+{
+    public double Ctl { get; set; }
+    public double Atl { get; set; }
+    public double Tsb { get; set; }
+    public double? RampRate { get; set; }
+}
+
 public static class ChartService
 {
     /// <summary>
@@ -244,6 +252,215 @@ public static class ChartService
         if (ts.TotalHours >= 1)
             return $"{(int)ts.TotalHours}:{ts.Minutes:D2}:{ts.Seconds:D2}";
         return $"{ts.Minutes}:{ts.Seconds:D2}";
+    }
+
+    /// <summary>
+    /// Generate power zones visualization
+    /// </summary>
+    public static string GeneratePowerZones(int ftp, int[] zones)
+    {
+        var chart = new System.Text.StringBuilder();
+        chart.AppendLine("\nPower Zones (based on FTP)\n");
+
+        var zoneNames = new[] { "Z1 Recovery", "Z2 Endurance", "Z3 Tempo", "Z4 Threshold", "Z5 VO2max", "Z6 Anaerobic", "Z7 Neuromuscular" };
+        var zoneColors = new[] { "░", "▒", "▓", "█", "█", "█", "█" };
+
+        for (int i = 0; i < Math.Min(zones.Length - 1, zoneNames.Length); i++)
+        {
+            var lowerPercent = zones[i];
+            var upperPercent = zones[i + 1];
+            var lowerWatts = (int)(ftp * lowerPercent / 100.0);
+            var upperWatts = i < zones.Length - 2 ? (int)(ftp * upperPercent / 100.0) : 999;
+
+            var bar = new string(zoneColors[i][0], 10);
+            var range = upperWatts < 999 ? $"{lowerWatts}-{upperWatts}W" : $"{lowerWatts}W+";
+
+            chart.AppendLine($"{zoneNames[i],-18} {bar}  {lowerPercent,3}%-{upperPercent,3}%  │ {range}");
+        }
+
+        return chart.ToString();
+    }
+
+    /// <summary>
+    /// Generate HR zones visualization
+    /// </summary>
+    public static string GenerateHrZones(int[] zones, int maxHr)
+    {
+        var chart = new System.Text.StringBuilder();
+        chart.AppendLine("\nHeart Rate Zones\n");
+
+        var zoneNames = new[] { "Z1 Recovery", "Z2 Aerobic", "Z3 Tempo", "Z4 Threshold", "Z5 Max" };
+        var zoneColors = new[] { "░", "▒", "▓", "█", "█" };
+
+        for (int i = 0; i < Math.Min(zones.Length, zoneNames.Length); i++)
+        {
+            var lowerBpm = i == 0 ? 0 : zones[i - 1];
+            var upperBpm = zones[i];
+
+            var bar = new string(zoneColors[i][0], 10);
+            var range = $"{lowerBpm}-{upperBpm} bpm";
+
+            chart.AppendLine($"{zoneNames[i],-18} {bar}  │ {range}");
+        }
+
+        // Add max HR zone
+        if (zones.Length >= 5)
+        {
+            chart.AppendLine($"{"Max HR",-18} {"█",-10}  │ {zones[4]}+ bpm ({maxHr} max)");
+        }
+
+        return chart.ToString();
+    }
+
+    /// <summary>
+    /// Generate CTL/ATL/TSB trend sparkline chart
+    /// </summary>
+    public static string GenerateFitnessTrend(List<WellnessDataPoint> data, int days = 30)
+    {
+        if (data == null || data.Count == 0)
+            return string.Empty;
+
+        // Take last N days
+        var recentData = data.TakeLast(days).ToList();
+        if (recentData.Count == 0)
+            return string.Empty;
+
+        var chart = new System.Text.StringBuilder();
+        chart.AppendLine($"\nFitness Trend (Last {recentData.Count} Days)\n");
+
+        // Get current values
+        var latest = recentData.Last();
+        var oldest = recentData.First();
+        var ctlChange = latest.Ctl - oldest.Ctl;
+        var tsbCurrent = latest.Tsb;
+
+        // Determine form zone
+        string formZone;
+        string formIndicator;
+        if (tsbCurrent >= 15)
+        {
+            formZone = "Fresh/Racing";
+            formIndicator = "🟢";
+        }
+        else if (tsbCurrent >= -10)
+        {
+            formZone = "Transitional";
+            formIndicator = "🟡";
+        }
+        else if (tsbCurrent >= -30)
+        {
+            formZone = "Optimal Training";
+            formIndicator = "🔵";
+        }
+        else if (tsbCurrent >= -50)
+        {
+            formZone = "Overreaching";
+            formIndicator = "🟠";
+        }
+        else
+        {
+            formZone = "High Risk";
+            formIndicator = "🔴";
+        }
+
+        chart.AppendLine($"CTL (Fitness):  {latest.Ctl:F1} ({(ctlChange >= 0 ? "+" : "")}{ctlChange:F1} from {recentData.Count} days ago)");
+        chart.AppendLine($"ATL (Fatigue):  {latest.Atl:F1}");
+        chart.AppendLine($"TSB (Form):     {tsbCurrent:F1} {formIndicator} {formZone}");
+
+        if (latest.RampRate != null)
+        {
+            var rampStr = latest.RampRate.Value.ToString("F1");
+            var rampIndicator = latest.RampRate.Value > 8 ? "⚠️" : latest.RampRate.Value > 5 ? "✓" : "↓";
+            chart.AppendLine($"Ramp Rate:      {rampStr} TSS/week {rampIndicator}");
+        }
+
+        // Generate sparkline for CTL
+        chart.AppendLine();
+        chart.AppendLine("CTL Progression:");
+        chart.Append("  ");
+        var sparkline = GenerateSparkline(recentData.Select(d => d.Ctl).ToList(), 50);
+        chart.AppendLine(sparkline);
+
+        // TSB bar
+        chart.AppendLine();
+        chart.AppendLine("Form Zone:");
+        var tsbBar = GenerateTsbBar(tsbCurrent);
+        chart.AppendLine(tsbBar);
+
+        return chart.ToString();
+    }
+
+    private static string GenerateSparkline(List<double> values, int width)
+    {
+        if (values.Count == 0) return string.Empty;
+
+        var min = values.Min();
+        var max = values.Max();
+        var range = max - min;
+
+        if (range == 0)
+            return new string('─', width);
+
+        var sparkChars = new[] { '▁', '▂', '▃', '▄', '▅', '▆', '▇', '█' };
+        var result = new System.Text.StringBuilder();
+
+        // Sample values to fit width
+        var step = Math.Max(1, values.Count / width);
+        for (int i = 0; i < values.Count; i += step)
+        {
+            var value = values[i];
+            var normalized = (value - min) / range;
+            var charIndex = (int)(normalized * (sparkChars.Length - 1));
+            result.Append(sparkChars[charIndex]);
+        }
+
+        return result.ToString();
+    }
+
+    private static string GenerateTsbBar(double tsb)
+    {
+        var chart = new System.Text.StringBuilder();
+
+        // Bar ranges: -50 to +25
+        var barWidth = 60;
+        var zeroPosition = 40; // Position of zero on the bar (at -50 is 0, +25 is 60)
+
+        // Calculate position (-50 to +25 range)
+        var position = (int)((tsb + 50) / 75.0 * barWidth);
+        position = Math.Max(0, Math.Min(barWidth - 1, position));
+
+        // Build bar with zones
+        var bar = new char[barWidth];
+        for (int i = 0; i < barWidth; i++)
+        {
+            if (i < zeroPosition)
+            {
+                // Negative TSB (left of zero)
+                if (i < 20)
+                    bar[i] = '█'; // High risk zone (< -30)
+                else if (i < zeroPosition)
+                    bar[i] = '▓'; // Optimal training (-30 to -10)
+            }
+            else
+            {
+                // Positive TSB (right of zero)
+                if (i < zeroPosition + 8)
+                    bar[i] = '▒'; // Transitional (-10 to +10)
+                else
+                    bar[i] = '░'; // Fresh/racing (>+10)
+            }
+        }
+
+        // Place indicator
+        bar[position] = '▼';
+
+        chart.Append("  ");
+        chart.Append(new string(bar));
+        chart.AppendLine();
+        chart.AppendLine("  -50        -30      -10   0   +10      +25");
+        chart.AppendLine("  High Risk  Optimal  Trans Fresh/Race");
+
+        return chart.ToString();
     }
 }
 
