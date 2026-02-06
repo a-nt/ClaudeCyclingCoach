@@ -357,11 +357,35 @@ public static class AnalysisService
         if (zoneTimes.ValueKind == System.Text.Json.JsonValueKind.Array)
         {
             var array = zoneTimes.EnumerateArray().ToList();
-            for (int i = 0; i < array.Count; i++)
+
+            // Handle object format: [{"id": "Z1", "secs": 279}, ...]
+            if (array.Count > 0 && array[0].ValueKind == System.Text.Json.JsonValueKind.Object)
             {
-                if (array[i].ValueKind == System.Text.Json.JsonValueKind.Number)
+                for (int i = 0; i < array.Count; i++)
                 {
-                    result[i + 1] = array[i].GetDouble();
+                    if (array[i].TryGetProperty("id", out var idProp) &&
+                        array[i].TryGetProperty("secs", out var secsProp))
+                    {
+                        var id = idProp.GetString();
+                        var secs = secsProp.GetDouble();
+
+                        // Map zone IDs to numbers (Z1=1, Z2=2, etc.)
+                        if (id?.StartsWith("Z") == true && int.TryParse(id.Substring(1), out int zoneNum))
+                        {
+                            result[zoneNum] = secs;
+                        }
+                    }
+                }
+            }
+            // Handle simple number array format: [279, 4958, 2, ...]
+            else
+            {
+                for (int i = 0; i < array.Count; i++)
+                {
+                    if (array[i].ValueKind == System.Text.Json.JsonValueKind.Number)
+                    {
+                        result[i + 1] = array[i].GetDouble();
+                    }
                 }
             }
         }
