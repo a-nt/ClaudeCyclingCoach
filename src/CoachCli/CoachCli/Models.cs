@@ -124,8 +124,14 @@ public class ApiActivity
     [JsonPropertyName("avg_hr")]
     public int? AvgHr { get; set; }
 
+    [JsonPropertyName("average_heartrate")]
+    public int? AverageHeartrate { get; set; }
+
     [JsonPropertyName("max_hr")]
     public int? MaxHr { get; set; }
+
+    [JsonPropertyName("max_heartrate")]
+    public int? MaxHeartrate { get; set; }
 
     [JsonPropertyName("average_cadence")]
     public double? AverageCadence { get; set; }
@@ -163,7 +169,8 @@ public class ApiActivity
     public double? GetIntensityFactor() => IcuIf ?? IntensityFactor;
     public double? GetVariabilityIndex() => VariabilityIndex ?? Vi;
     public double? GetTrainingLoad() => IcuTrainingLoad ?? TrainingLoad ?? Tss;
-    public int? GetAverageHr() => AverageHr ?? AvgHr;
+    public int? GetAverageHr() => AverageHr ?? AvgHr ?? AverageHeartrate;
+    public int? GetMaxHr() => MaxHr ?? MaxHeartrate;
     public double? GetEfficiencyFactor() => EfficiencyFactor ?? Ef ?? Efficiency;
 }
 

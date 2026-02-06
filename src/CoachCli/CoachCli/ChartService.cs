@@ -227,7 +227,7 @@ public static class ChartService
         var np = activity.GetNormalizedPower();
         var vi = activity.GetVariabilityIndex();
         var avgHr = activity.GetAverageHr();
-        var maxHr = activity.MaxHr;
+        var maxHr = activity.GetMaxHr();
         var ef = activity.GetEfficiencyFactor();
 
         var name = activity.Name ?? "Activity";

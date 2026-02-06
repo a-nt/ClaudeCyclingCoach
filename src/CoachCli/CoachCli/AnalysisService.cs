@@ -30,7 +30,7 @@ public static class AnalysisService
                 variabilityIndex = activity.GetVariabilityIndex(),
                 trainingLoad = activity.GetTrainingLoad(),
                 averageHr = activity.GetAverageHr(),
-                maxHr = activity.MaxHr,
+                maxHr = activity.GetMaxHr(),
                 averageCadence = activity.AverageCadence ?? activity.AvgCadence,
                 efficiencyFactor = activity.GetEfficiencyFactor(),
                 powerCurve = activity.PowerCurve,

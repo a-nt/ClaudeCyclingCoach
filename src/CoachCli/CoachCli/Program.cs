@@ -172,7 +172,7 @@ static async Task HandleActivity(IntervalsApiClient client, string id)
             variabilityIndex = activity.GetVariabilityIndex(),
             trainingStress = activity.GetTrainingLoad(),
             averageHr = activity.GetAverageHr(),
-            maxHr = activity.MaxHr,
+            maxHr = activity.GetMaxHr(),
             averageCadence = activity.AverageCadence ?? activity.AvgCadence,
             efficiency = activity.GetEfficiencyFactor(),
             powerCurve = activity.PowerCurve,
