@@ -5,7 +5,7 @@
 Transform your training data into actionable coaching insights with power/heart rate analysis, fitness trends, and personalized recommendations.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node.js](https://img.shields.io/badge/node.js-built--in%20modules-green.svg)](https://nodejs.org/)
+[![.NET 9](https://img.shields.io/badge/.NET-9.0-purple.svg)](https://dotnet.microsoft.com/)
 [![intervals.icu](https://img.shields.io/badge/intervals.icu-integrated-blue.svg)](https://intervals.icu)
 
 ## ✨ Features
@@ -19,15 +19,33 @@ Transform your training data into actionable coaching insights with power/heart 
 - 👤 **Profile Management** - View your FTP, zones, and key metrics at a glance
 - 💬 **Conversational Coaching** - Ask follow-up questions and get personalized advice
 - 🔒 **Privacy First** - Your data stays on your machine, no cloud processing
-- 🚀 **Zero Dependencies** - Uses only Node.js built-in modules
+- 🚀 **Minimal Dependencies** - Built with .NET 9, only System.CommandLine dependency
+- ⚡ **Type-Safe** - C# implementation with strict models for reliable API parsing
 
 ## 🎯 Quick Start
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) installed (any recent version)
+- [.NET 9 Runtime](https://dotnet.microsoft.com/download) installed
 - [Claude Code](https://claude.ai/download) CLI tool
 - [intervals.icu](https://intervals.icu) account with API access
+
+**⚠️ Important: Data Quality**
+
+This skill works best with activities uploaded **directly** to intervals.icu from:
+- Wahoo head units
+- Garmin devices (via Garmin Connect sync to intervals.icu)
+- Zwift
+- TrainerRoad
+- Other platforms that provide full power/HR streams
+
+**Strava-synced activities have limited data** due to Strava's API restrictions. Activities synced through Strava will show basic metrics but lack the detailed second-by-second power and heart rate streams needed for:
+- Aerobic decoupling analysis
+- Variability Index (VI) calculations
+- Interval detection
+- Detailed zone distribution
+
+For best results, configure your device or platform to sync directly to intervals.icu.
 
 ### Installation
 
@@ -36,11 +54,11 @@ Transform your training data into actionable coaching insights with power/heart 
 git clone https://github.com/a-nt/cycling-coach-skill.git
 cd cycling-coach-skill
 
-# Create symlink to Claude Code skills directory
-ln -s "$(pwd)/skill-source" ~/.claude/skills/coach
+# Symlink repository root to Claude Code skills directory
+ln -s "$(pwd)" ~/.claude/skills/coach
 
 # Or copy directly
-cp -r skill-source ~/.claude/skills/coach
+cp -r . ~/.claude/skills/coach
 ```
 
 ### Configuration
@@ -137,23 +155,43 @@ and this wasn't a maximal test, you're likely ready. Test when fresh - TSB aroun
 
 ## 🏗️ Architecture
 
+**Implementation: C# .NET 9** ✅
+
 ```
-skill-source/
+cycling-coach/                  # Root IS the skill (symlink to ~/.claude/skills/coach)
 ├── SKILL.md                    # Main skill definition (Claude reads this)
-├── scripts/
-│   ├── intervals-api.js        # intervals.icu API client
-│   └── analyze-activity.js     # Analysis calculations engine
+├── bin/
+│   ├── coach-cli/              # C# compiled binaries
+│   │   └── CoachCli.dll        # Main CLI application
+│   └── coach-cli.sh            # Wrapper script
+├── src/                        # C# source code (~880 LOC)
+│   └── CoachCli/
+│       ├── CoachCli/
+│       │   ├── Program.cs              # CLI entry point
+│       │   ├── Configuration.cs        # Config service
+│       │   ├── Models.cs               # API models
+│       │   ├── IntervalsApiClient.cs   # HTTP client
+│       │   └── AnalysisService.cs      # Analysis engine
 ├── examples/
 │   ├── activity-analysis.md    # Output template for activities
 │   └── trend-report.md         # Output template for trends
 ├── README.md                   # User documentation
 ├── TESTING.md                  # Testing procedures
-└── .config.json               # Your credentials (created on setup)
+└── .config.json.example        # Config template (real .config.json created on setup)
 ```
+
+**Why C#?**
+- ✅ Type-safe API models prevent parsing errors
+- ✅ Integrated analysis (single command vs piping)
+- ✅ Better error handling and diagnostics
+- ✅ Maintainable architecture
+- ✅ ~250ms startup (acceptable for API-bound operations)
+
+**Deployment:** Root directory is symlinked to `~/.claude/skills/coach/`
 
 ## 🔒 Privacy & Security
 
-- ✅ Credentials stored locally in `~/.claude/skills/cycling-coach/.config.json`
+- ✅ Credentials stored locally in `~/.claude/skills/coach/.config.json`
 - ✅ File permissions set to `600` (owner read/write only)
 - ✅ No data sent to external services (except intervals.icu API)
 - ✅ Environment variables supported for extra security
@@ -187,15 +225,28 @@ skill-source/
 
 ## 🛠️ Development
 
+### Building from Source
+
+```bash
+# Build the C# project
+cd src/CoachCli/CoachCli
+dotnet build -c Release
+
+# Publish to bin directory (skill root is symlinked)
+dotnet publish -c Release -r osx-arm64 --self-contained false \
+  -o ../../../bin/coach-cli
+```
+
 ### Running Tests
 
 ```bash
-# Test API client directly
-node skill-source/scripts/intervals-api.js profile
+# Test CLI commands
+dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll profile
+dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll activities --limit 5
+dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 30
 
-# Test analysis with sample data
-echo '{"activity": {...}, "profile": {...}}' | \
-  node skill-source/scripts/analyze-activity.js
+# Or use wrapper script
+~/.claude/skills/coach/bin/coach-cli.sh profile
 
 # See TESTING.md for comprehensive test procedures
 ```
@@ -227,6 +278,16 @@ export INTERVALS_ICU_ATHLETE_ID="i12345"
 - Check sync from Garmin/Strava/etc.
 - Wait a few minutes for processing
 
+### Missing analysis metrics (VI, decoupling, intervals)
+**Problem:** Activity shows basic stats but missing detailed analysis like VI, aerobic decoupling, or interval detection.
+
+**Cause:** Strava-synced activities lack detailed power/HR streams due to Strava's API restrictions.
+
+**Solution:**
+- Configure your device to upload directly to intervals.icu (Wahoo, Garmin Connect, Zwift, etc.)
+- Or: Enable Garmin Connect → intervals.icu sync instead of Strava → intervals.icu
+- Check intervals.icu activity page - if the power/HR graph shows only summary stats (not second-by-second), the data isn't available
+
 ### Network errors
 - Check internet connection
 - Verify intervals.icu is accessible
@@ -243,18 +304,13 @@ export INTERVALS_ICU_ATHLETE_ID="i12345"
 Built with:
 - [Claude Code](https://claude.ai/code) by Anthropic
 - [intervals.icu](https://intervals.icu) by David Tinker
-- Node.js built-in modules only
+- [.NET 9](https://dotnet.microsoft.com/) by Microsoft
+- [System.CommandLine](https://github.com/dotnet/command-line-api) for CLI parsing
 
 ## 📄 License
 
-MIT License - see [LICENSE.txt](skill-source/LICENSE.txt)
+MIT License - see [LICENSE.txt](LICENSE.txt)
 
 ## 🌟 Star History
 
 If this skill helps your training, please star the repository!
-
----
-
-**Made with ❤️ by cyclists, for cyclists**
-
-Questions? Issues? [Open an issue](https://github.com/a-nt/cycling-coach-skill/issues) or reach out on the Claude Code forums.

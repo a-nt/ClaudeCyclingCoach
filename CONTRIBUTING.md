@@ -12,7 +12,7 @@ Found a bug or have a feature request?
 2. Create a new issue with:
    - Clear description of the problem/feature
    - Steps to reproduce (for bugs)
-   - Your environment (OS, Node.js version)
+   - Your environment (OS, .NET version)
    - Example data if relevant (redact personal info)
 
 ### Code Contributions
@@ -24,13 +24,13 @@ Found a bug or have a feature request?
    ```
 
 3. **Make your changes**
-   - Follow existing code style
-   - Test thoroughly (see `docs/TESTING.md`)
+   - Follow existing code style (C# conventions)
+   - Test thoroughly (see `TESTING.md`)
    - Update documentation if needed
 
 4. **Test with real data**
-   - Ensure scripts work with intervals.icu API
-   - Test all commands: setup, profile, analyze, trends
+   - Ensure CLI works with intervals.icu API
+   - Test all commands: setup, profile, analyze, trends, check-in
    - Verify error handling
 
 5. **Commit with clear messages**
@@ -54,15 +54,21 @@ Found a bug or have a feature request?
 git clone https://github.com/YOUR-USERNAME/cycling-coach-skill.git
 cd cycling-coach-skill
 
-# Link to Claude Code skills directory
-ln -s "$(pwd)/skill-source" ~/.claude/skills/cycling-coach
+# Link to Claude Code skills directory (root is the skill)
+ln -s "$(pwd)" ~/.claude/skills/coach
 
 # Set up test credentials
 export INTERVALS_ICU_API_KEY="your-test-key"
 export INTERVALS_ICU_ATHLETE_ID="i12345"
 
-# Test the scripts
-node skill-source/scripts/intervals-api.js profile
+# Test the CLI
+dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll profile
+
+# Or rebuild from source
+cd src/CoachCli/CoachCli
+dotnet build -c Release
+dotnet publish -c Release -r osx-arm64 --self-contained false \
+  -o ../../../bin/coach-cli
 ```
 
 ## Areas for Contribution
@@ -87,31 +93,41 @@ node skill-source/scripts/intervals-api.js profile
 
 ## Code Style
 
-- **Node.js:** Use built-in modules only (no external dependencies)
-- **Formatting:** 2-space indentation, semicolons
+- **C#:** Follow standard C# conventions (.NET coding standards)
+- **Dependencies:** Minimal - only System.CommandLine for CLI parsing
+- **Formatting:** 4-space indentation, follow .editorconfig if present
 - **Comments:** Explain why, not what (code should be self-documenting)
-- **Error handling:** Always return JSON with success/error status
+- **Error handling:** Return structured JSON with clear error messages
 
 ## Testing
 
 Before submitting:
 
-1. **Manual testing** (see `docs/TESTING.md`)
+1. **Manual testing** (see `TESTING.md`)
    - Test all commands with real intervals.icu account
    - Test error scenarios
    - Verify conversational follow-ups work
 
-2. **Script testing**
+2. **CLI testing**
    ```bash
-   # Test API client
-   node skill-source/scripts/intervals-api.js profile
+   # Test all commands
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll profile
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll activities --limit 5
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll wellness --days 30
 
-   # Test analysis with sample data
-   echo '{"activity": {...}, "profile": {...}}' | \
-     node skill-source/scripts/analyze-activity.js
+   # Test analysis
+   ACTIVITY_ID=$(dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll activities --limit 1 | jq -r '.[0].id')
+   dotnet ~/.claude/skills/coach/bin/coach-cli/CoachCli.dll analyze $ACTIVITY_ID
    ```
 
-3. **Check for credentials leaks**
+3. **Build testing**
+   ```bash
+   cd src/CoachCli/CoachCli
+   dotnet clean
+   dotnet build -c Release
+   ```
+
+4. **Check for credentials leaks**
    ```bash
    git diff | grep -i "api.*key\|athlete.*id"
    ```
