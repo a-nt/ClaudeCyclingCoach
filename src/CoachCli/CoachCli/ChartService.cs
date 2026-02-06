@@ -38,7 +38,7 @@ public static class ChartService
         var table = new Table()
             .Border(TableBorder.Rounded)
             .Title("[bold]Time in Power Zones[/]")
-            .AddColumn(new TableColumn("Zone").Centered())
+            .AddColumn(new TableColumn("Zone").LeftAligned())
             .AddColumn(new TableColumn("Distribution").Centered())
             .AddColumn(new TableColumn("% Time").RightAligned())
             .AddColumn(new TableColumn("Minutes").RightAligned());
